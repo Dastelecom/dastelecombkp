@@ -234,7 +234,7 @@
   </div>
 
   <!-- Main Content Wrapper -->
-  <div class="flex-1 flex items-center justify-center px-4 py-6">
+  <div class="flex-1 flex items-center justify-center px-4 py-6 pt-12 md:pt-16">
 
   <main class="w-full max-w-2xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-2">
 
@@ -384,7 +384,8 @@
                 'open invoice form',
                 'create invoice',
                 'make invoice',
-                'new invoice'
+                'new invoice',
+                'new bill'
               ];
               
               // Check for Bengali phrase
@@ -420,7 +421,7 @@
                   const useBn = bnMatch;
                   const defaultText = useBn ? 'কোন ইনভয়েস ক্যাশ নাকি ই এম আই' : 'Which invoice cash or emi';
                   try {
-                    fetch('/jarvis-gemini', {
+                    fetch('jarvis-gemini.php', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ transcript: event.results[i][0].transcript, language: useBn ? 'bn' : 'en' })
