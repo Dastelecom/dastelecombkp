@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Server Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      /* background-color: #0f0f0f; */
+      background-color: #0f0f0f;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .glass {
+      background-color: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    .cerulean {
+      color: #00BCFF;
+    }
+    .blinking-cursor::after {
+      content: "█";
+      animation: blink 1s steps(1) infinite;
+      margin-left: 4px;
+      color: #00BCFF;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    @media (max-width: 640px) {
+      .glass {
+        margin: 1rem;
+        height: calc(100vh - 2rem) !important;
+      }
+    }
+    /* Professional ASCII art styles with smooth animations */
+    #big-title {
+      font-family: monospace;
+      white-space: pre;
+      color: rgb(217, 119, 87);
+      line-height: 1.25;
+      will-change: transform;
+    }
+    
+    /* Smooth scrolling for terminal */
+    #terminal {
+      scroll-behavior: smooth;
+    }
+    
+    /* Hide horizontal scrollbar */
+    body {
+      overflow-x: hidden;
+    }
+    
+    html {
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4 font-mono text-base text-[#00BCFF]">
+  <!-- Background with dotted grid -->
+  <div class="absolute top-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
+  
+  <div class="w-full max-w-6xl h-[450px] md:h-[550px] rounded-lg shadow-xl overflow-hidden flex flex-col mx-auto mt-12" style="background-color: #2c2c2c; border: 1px solid #444;">
+    <div class="bg-gray-700 text-gray-200 px-4 py-3 text-sm font-semibold flex items-center gap-2">
+      <!-- Terminal Icon -->
+      <div class="flex items-center gap-2 mr-4">
+        <svg width="24" height="20" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="20" height="16" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1"/>
+          <rect x="1" y="1" width="18" height="4" fill="#f0f0f0"/>
+          <circle cx="3" cy="3" r="1" fill="#333333"/>
+          <circle cx="6" cy="3" r="1" fill="#333333"/>
+          <rect x="1" y="5" width="18" height="10" fill="#000000"/>
+          <path d="M4 9L6 11L4 13" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="8" y1="13" x2="12" y2="13" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Terminal
+    </div>
+    <div id="terminal" class="flex-1 p-4 leading-relaxed space-y-1 overflow-y-auto" style="background-color: #1e1e1e; color: #d4d4d4;">
+      <div id="big-title" class="mb-6"></div>
+    </div>
+  </div>
+  
+  <!-- Simple Footer -->
+   <!-- mt-8 text-center py-4 -->
+  <footer class="w-full mt-8 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+    <div class="text-center py-4">
+      <p class="text-gray-400">
+        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Set current year automatically
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAibWFQ955D9sxgExTvXf9ykC0HJQPbatA",
+      authDomain: "dastelecominvoicegenerator.firebaseapp.com",
+      databaseURL: "https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dastelecominvoicegenerator",
+      storageBucket: "dastelecominvoicegenerator.appspot.com",
+      messagingSenderId: "959180798639",
+      appId: "1:959180798639:web:861d25289ff80c8c17725a",
+      measurementId: "G-Y4JJXQGSJC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const terminal = document.getElementById("terminal");
+    const bigTitle = document.getElementById("big-title");
+
+    const commands = [
+      "Initializing connection...",
+      "Checking server status...",
+      "Connected to Firebase.",
+      "Monitoring Server Realtime Data..."
+    ];
+
+    let index = 0;
+    const logData = [];
+    const timestamp = Date.now();
+    let isAuthenticated = localStorage.getItem('terminalAuth') === 'true' || false;
+    let pendingInput = '';
+    let inputMode = isAuthenticated ? 'command' : 'password'; // 'password' or 'command'
+    const ROOT_PASSWORD = '9735987511'; // Change this to your desired password
+
+    function cleanupOldLogs() {
+      db.ref("terminal/logs").remove(); // Optional: Clear logs on load
+    }
+
+    function renderBlockTitle() {
+      if (!bigTitle) return;
+      
+      // ASCII art for SERVER TERMINAL using Unicode box-drawing characters
+      const asciiArt = [
+        ' ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗ ',
+        ' ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗',
+        ' ███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝',
+        ' ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗',
+        ' ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║',
+        ' ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝',
+        ' ',
+        ' ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗     ',
+        ' ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║     ',
+        '    ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║     ',
+        '    ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██╔══██║██║     ',
+        '    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██║  ██║███████╗',
+        '    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝',
+        ''
+      ];
+      
+      bigTitle.innerHTML = '';
+      bigTitle.style.fontFamily = 'monospace';
+      bigTitle.style.fontSize = window.innerWidth < 640 ? '8px' : '12px';
+      bigTitle.style.lineHeight = '1.25';
+      bigTitle.style.color = 'rgb(217, 119, 87)';
+      bigTitle.style.whiteSpace = 'pre';
+      bigTitle.style.marginBottom = '20px';
+      
+      // Animate ASCII art loading line by line with professional smoothness
+      let lineIndex = 0;
+      
+      function addNextLine() {
+        if (lineIndex < asciiArt.length) {
+          const div = document.createElement('div');
+          div.textContent = asciiArt[lineIndex];
+          div.style.color = 'rgb(217, 119, 87)';
+          div.style.lineHeight = '1.25';
+          div.style.opacity = '0';
+          div.style.transform = 'translateY(15px) scale(0.98)';
+          div.style.filter = 'blur(1px)';
+          bigTitle.appendChild(div);
+          
+          // Professional smooth animation with cubic-bezier easing
+          setTimeout(() => {
+            div.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            div.style.opacity = '1';
+            div.style.transform = 'translateY(0) scale(1)';
+            div.style.filter = 'blur(0px)';
+          }, 20);
+          
+          lineIndex++;
+          // Staggered timing for more natural flow
+          const nextDelay = lineIndex < 6 ? 60 : 45; // Slightly faster for "TERMINAL"
+          setTimeout(addNextLine, nextDelay);
+        }
+      }
+      
+      // Start with elegant delay
+      setTimeout(addNextLine, 150);
+    }
+
+    function typeCommand() {
+      if (index < commands.length) {
+        const line = document.createElement("p");
+        if (index <= 1) line.className = "cerulean";
+        terminal.appendChild(line);
+        let text = "", i = 0;
+
+        const interval = setInterval(() => {
+          if (i < commands[index].length) {
+            text += commands[index][i++];
+            line.textContent = text;
+            terminal.scrollTop = terminal.scrollHeight;
+          } else {
+            clearInterval(interval);
+            logData.push({ text: commands[index], time: Date.now() });
+            index++;
+            setTimeout(typeCommand, 400);
+          }
+        }, 20);
+      } else {
+        // After commands, check if already authenticated
+        if (isAuthenticated) {
+          // Skip password prompt and go directly to server status
+          setTimeout(() => {
+            showServerStatus();
+            enableCommandInput();
+          }, 800);
+        } else {
+          // Show password prompt for first-time users
+          setTimeout(showPasswordPrompt, 800);
+        }
+      }
+    }
+
+    function showPasswordPrompt() {
+      const line = document.createElement("p");
+      line.className = "text-yellow-400 mt-4";
+      line.textContent = "Root access required. Enter password:";
+      terminal.appendChild(line);
+      
+      const inputLine = document.createElement("div");
+      inputLine.className = "flex items-center mt-2";
+      inputLine.innerHTML = `
+        <span class="text-green-400 mr-2">root@server:~#</span>
+        <span id="password-display" class="text-white"></span>
+        <span class="blinking-cursor"></span>
+      `;
+      terminal.appendChild(inputLine);
+      
+      terminal.scrollTop = terminal.scrollHeight;
+      
+      // Enable keyboard input
+      document.addEventListener('keydown', handlePasswordInput);
+    }
+    
+    function handlePasswordInput(event) {
+      if (!isAuthenticated && inputMode === 'password') {
+        if (event.key === 'Enter') {
+          if (pendingInput === ROOT_PASSWORD) {
+            // Correct password
+            document.getElementById('password-display').textContent = '*'.repeat(pendingInput.length);
+            
+            const successLine = document.createElement("p");
+            successLine.className = "text-green-400 mt-2";
+            successLine.textContent = "Access granted. Welcome, root.";
+            terminal.appendChild(successLine);
+            
+            isAuthenticated = true;
+            localStorage.setItem('terminalAuth', 'true'); // Persist login state
+            inputMode = 'command';
+            pendingInput = '';
+            
+            // Remove password event listener
+            document.removeEventListener('keydown', handlePasswordInput);
+            
+            // Show server status and enable command input
+            setTimeout(() => {
+              showServerStatus();
+              enableCommandInput();
+            }, 1000);
+          } else {
+            // Wrong password
+            document.getElementById('password-display').textContent = '*'.repeat(pendingInput.length);
+            
+            const errorLine = document.createElement("p");
+            errorLine.className = "text-red-400 mt-2";
+            errorLine.textContent = "Access denied. Incorrect password.";
+            terminal.appendChild(errorLine);
+            
+            pendingInput = '';
+            
+            // Show prompt again after delay
+            setTimeout(() => {
+              document.getElementById('password-display').textContent = '';
+              showPasswordPrompt();
+            }, 2000);
+          }
+        } else if (event.key === 'Backspace') {
+          pendingInput = pendingInput.slice(0, -1);
+          document.getElementById('password-display').textContent = '*'.repeat(pendingInput.length);
+        } else if (event.key.length === 1) {
+          pendingInput += event.key;
+          document.getElementById('password-display').textContent = '*'.repeat(pendingInput.length);
+        }
+        
+        terminal.scrollTop = terminal.scrollHeight;
+        event.preventDefault();
+      }
+    }
+    
+    function enableCommandInput() {
+      const commandLine = document.createElement("div");
+      commandLine.className = "flex items-center mt-4";
+      commandLine.innerHTML = `
+        <span class="text-green-400 mr-2">root@server:~#</span>
+        <span id="command-display" class="text-white"></span>
+        <span class="blinking-cursor"></span>
+      `;
+      terminal.appendChild(commandLine);
+      
+      let commandInput = '';
+      
+      function handleCommandInput(event) {
+        if (isAuthenticated && inputMode === 'command') {
+          if (event.key === 'Enter') {
+            if (commandInput.trim()) {
+              // Process command
+              const cmdLine = document.createElement("p");
+              cmdLine.className = "text-white";
+              cmdLine.textContent = `root@server:~# ${commandInput}`;
+              terminal.appendChild(cmdLine);
+              
+              // Simple command responses
+              const responseLine = document.createElement("p");
+              responseLine.className = "text-gray-300 ml-4";
+              
+              switch(commandInput.toLowerCase().trim()) {
+                case 'help':
+                  responseLine.textContent = "Available commands: help, status, clear, logout, exit";
+                  break;
+                case 'status':
+                  responseLine.textContent = "Server status: Online | All systems operational";
+                  break;
+                case 'clear':
+                  // Clear terminal (keep only the title)
+                  const titleElement = document.getElementById('big-title');
+                  terminal.innerHTML = '';
+                  terminal.appendChild(titleElement);
+                  enableCommandInput();
+                  return;
+                case 'logout':
+                  responseLine.textContent = "Logging out and clearing session...";
+                  terminal.appendChild(responseLine);
+                  localStorage.removeItem('terminalAuth'); // Clear login state
+                  setTimeout(() => {
+                    location.reload();
+                  }, 1500);
+                  return;
+                case 'exit':
+                  responseLine.textContent = "Logging out...";
+                  terminal.appendChild(responseLine);
+                  localStorage.removeItem('terminalAuth'); // Clear login state on exit
+                  setTimeout(() => {
+                    location.reload();
+                  }, 1500);
+                  return;
+                default:
+                  responseLine.textContent = `Command '${commandInput}' not found. Type 'help' for available commands.`;
+              }
+              
+              terminal.appendChild(responseLine);
+              commandInput = '';
+              
+              // Add new command line
+              setTimeout(() => {
+                enableCommandInput();
+              }, 100);
+            }
+          } else if (event.key === 'Backspace') {
+            commandInput = commandInput.slice(0, -1);
+            document.getElementById('command-display').textContent = commandInput;
+          } else if (event.key.length === 1) {
+            commandInput += event.key;
+            document.getElementById('command-display').textContent = commandInput;
+          }
+          
+          terminal.scrollTop = terminal.scrollHeight;
+          event.preventDefault();
+        }
+      }
+      
+      document.addEventListener('keydown', handleCommandInput);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+    
+    function showServerStatus() {
+      const statusContainer = document.createElement("div");
+      statusContainer.className = "flex items-center space-x-2 mt-4";
+      const statusDot = document.createElement("div");
+      const statusText = document.createElement("span");
+
+      statusContainer.appendChild(statusDot);
+      statusContainer.appendChild(statusText);
+      terminal.appendChild(statusContainer);
+
+      db.ref("server/status").on("value", snapshot => {
+        const data = snapshot.val() || {};
+        const status = (data.status || "offline").toLowerCase();
+        const updatedAt = data.updated_at || "unknown";
+        const lastSeen = data.last_seen || 0;
+
+        const now = Math.floor(Date.now() / 1000);
+        const secondsSinceSeen = now - lastSeen;
+        const isOnline = secondsSinceSeen <= 30; // consider offline if no heartbeat in 30 seconds
+
+        // Update visuals
+        statusDot.className = `w-3 h-3 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`;
+        statusText.className = `font-medium ${isOnline ? 'text-green-500' : 'text-red-500'}`;
+        statusText.textContent = `Server ${isOnline ? "ONLINE" : "OFFLINE"}`;
+
+        // Log to terminal
+        const line = document.createElement("p");
+        line.className = isOnline ? "text-green-400" : "text-red-400";
+        line.textContent = `[${new Date().toLocaleTimeString()}] Server Status: ${isOnline ? "ONLINE" : "OFFLINE"} | Last Seen: ${updatedAt}`;
+        terminal.appendChild(line);
+
+        const prompt = document.createElement("p");
+        prompt.className = "blinking-cursor mt-2";
+        prompt.textContent = "C:\\>";
+        terminal.appendChild(prompt);
+
+        terminal.scrollTop = terminal.scrollHeight;
+        saveLogs();
+      });
+    }
+
+    function saveLogs() {
+      db.ref("terminal/logs").push({
+        timestamp: timestamp,
+        logs: logData
+      });
+    }
+
+    cleanupOldLogs();
+    renderBlockTitle();
+    typeCommand();
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

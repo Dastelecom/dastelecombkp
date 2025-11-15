@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Dastelecom Invoice Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .blinking-cursor {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: white;
+      animation: blink 1s step-end infinite;
+      display: inline;
+      margin-left: -2px;
+      line-height: 1.8;
+    }
+    @keyframes blink {
+      0%, 100% { color: transparent }
+      50% { color: white }
+    }
+    .content-box {
+      width: 500px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 9, 29, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .text-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center h-screen">
+  <div class="absolute top-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
+  <div class="text-center p-6 rounded-2xl shadow-xl content-box">
+    <h1 id="company-name" class="text-2xl font-bold text-blue-500 mb-4">Dastelecom</h1>
+    <div class="text-container">
+      <p id="welcome-text" class="text-xl text-gray-200"></p><span id="cursor" class="blinking-cursor">|</span>
+    </div>
+  </div>
+
+  <script>
+    const messages = {
+      english: {
+        company: "Dastelecom",
+        welcome: "Welcome to Dastelecom Invoice Generator"
+      },
+      bengali: {
+        company: "ডাস্টেলেকম",
+        welcome: "ডাস্টেলিকম ইনভয়েস জেনারেটরে আপনাকে স্বাগতম"
+      }
+    };
+    
+    const textElement = document.getElementById("welcome-text");
+    const companyElement = document.getElementById("company-name");
+    const cursor = document.getElementById("cursor");
+    let charIndex = 0;
+    let currentMessage = "";
+    let currentLanguage = "";
+
+    // Check localStorage for language preference
+    function getLanguage() {
+      const lastLanguage = localStorage.getItem('dastelLanguage');
+      
+      // If no preference exists or was English last time, use Bengali
+      if (lastLanguage === 'english') {
+        localStorage.setItem('dastelLanguage', 'bengali');
+        currentLanguage = 'bengali';
+        return messages.bengali.welcome;
+      } else {
+        // First time or was Bengali last time, use English
+        localStorage.setItem('dastelLanguage', 'english');
+        currentLanguage = 'english';
+        return messages.english.welcome;
+      }
+    }
+function typeText() {
+      if (charIndex < currentMessage.length) {
+        textElement.textContent += currentMessage.charAt(charIndex);
+        charIndex++;
+        setTimeout(typeText, 50);
+      } else {
+        // Wait before redirecting
+        setTimeout(() => {
+          // Remove cursor and redirect
+          cursor.style.display = "none";
+          window.location.href = "main.html";
+        }, 2000);
+      }
+    }
+
+    window.onload = function() {
+      currentMessage = getLanguage();
+      companyElement.textContent = messages[currentLanguage].company;
+      typeText();
+    };
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

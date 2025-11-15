@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Invoice Dashboard - Dastelecom</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html {
+      overflow-x: hidden;
+      min-height: 100vh;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    /* Full page background with radial gradient pattern - covers entire document */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+      pointer-events: none;
+      z-index: -2;
+    }
+    
+    /* Additional background layer that covers entire document */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: -3;
+    }
+    .card-hover {
+      position: relative;
+      overflow: hidden;
+      max-width: 380px;
+      min-width: 300px;
+      margin: 0 auto;
+      border: 1px solid #374151;
+      border-radius: 0.75rem;
+      padding: 1px;
+      backdrop-filter: blur(24px);
+      z-index: 10;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(226, 203, 255, 0.4);
+    }
+    
+    .card-hover:hover::before {
+      animation: spin 1s linear infinite;
+    }
+    
+    .card-hover::before {
+      content: '';
+      position: absolute;
+      inset: -1000%;
+      animation: spin 2s linear infinite;
+      background: conic-gradient(from 90deg at 50% 50%, #E2CBFF 0%, #393BB2 50%, #E2CBFF 100%);
+      z-index: -1;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .card-content {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(24px);
+      position: relative;
+      z-index: 1;
+    }
+    
+    @keyframes whiteGlowPulse {
+      0% {
+        opacity: 0.6;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    /* Clean Search Bar - Invoice PDFs Style */
+    .search-input {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(217, 119, 87, 0.5);
+      box-shadow: 0 0 20px rgba(217, 119, 87, 0.2);
+      outline: none;
+    }
+    
+    /* Button styling for invoice cards */
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(217, 119, 87, 0.2), rgba(255, 150, 120, 0.2));
+      border: 1px solid rgba(217, 119, 87, 0.3);
+      min-width: 100px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      transition: all 0.6s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(217, 119, 87, 0.3), rgba(255, 150, 120, 0.3));
+      transform: translateY(-2px);
+      box-shadow: 
+        0 5px 15px -5px rgba(217, 119, 87, 0.4),
+        0 0 10px rgba(217, 119, 87, 0.2);
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .invoice-number {
+      font-size: 1.25rem;
+      letter-spacing: 0.025em;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    .amount-text {
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+    }
+    
+
+    
+    /* Additional white glow elements */
+    .container {
+      position: relative;
+      z-index: 10;
+    }
+    
+    .container::before {
+      display: none;
+    }
+    
+    @keyframes floatingGlow {
+      0% {
+        transform: translate(-10px, -10px) scale(0.95);
+        opacity: 0.4;
+      }
+      100% {
+        transform: translate(10px, 10px) scale(1.05);
+        opacity: 0.7;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative">
+  <!-- Background with radial gradient pattern - covers entire page -->
+  <div class="fixed inset-0 z-[-1] bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]" style="background-attachment: fixed;"></div>
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- Enhanced Header -->
+    <div class="text-center mb-12 relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent blur-sm"></div>
+      <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-fade-in relative z-10 text-white" style="text-shadow: 0 0 30px rgba(217, 119, 87, 0.8), 0 0 60px rgba(217, 119, 87, 0.4);">
+        📑 Invoice Dashboard
+      </h1>
+      <p class="text-xl relative z-10 animate-fade-in text-gray-300" style="color: rgb(217, 119, 87); text-shadow: 0 0 20px rgba(217, 119, 87, 0.5); animation-delay: 0.3s;">
+        Manage and view all your invoice records
+      </p>
+      <div class="mt-4 flex justify-center animate-fade-in" style="animation-delay: 0.6s;">
+        <div class="w-24 h-1 bg-gradient-to-r from-transparent via-orange-500/60 to-transparent rounded-full"></div>
+      </div>
+    </div>
+
+
+
+    <!-- Clean Search Bar - Invoice PDFs Style -->
+    <div class="mb-10">
+      <div class="relative max-w-2xl mx-auto">
+        <input type="text" id="searchInput" placeholder="Search by invoice number or customer name..." 
+          class="w-full search-input text-white px-5 py-4 rounded-xl pl-12 text-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <!-- Search Results Counter -->
+      <div id="searchResults" class="text-center mt-4 opacity-0 transition-opacity duration-300">
+        <p class="text-sm text-gray-400">
+          <span class="inline-flex items-center gap-2">
+            <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+            Found <span id="resultCount" class="text-orange-400 font-semibold">0</span> invoices
+          </span>
+        </p>
+      </div>
+    </div>
+    <div id="loadingSpinner" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: rgb(217, 119, 87);"></div>
+      <p class="text-gray-300 mt-4" style="color: rgb(217, 119, 87);">Loading invoices...</p>
+    </div>
+
+    <!-- Invoice Cards Container -->
+    <div id="invoiceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 hidden min-h-[200px]">
+      <!-- Invoice cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-12 hidden">
+      <div class="text-6xl mb-4">📋</div>
+      <h3 class="text-xl font-semibold text-white mb-2">No Invoices Found</h3>
+      <p class="text-gray-400">No invoices match your search criteria.</p>
+    </div>
+  </div>
+
+  <!-- Footer positioned at bottom -->
+  <footer class="w-full mt-16 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+    <div class="text-center py-4">
+      <p class="text-gray-400">
+        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Replace with your Google Sheet ID
+    const sheetURL = "https://docs.google.com/spreadsheets/d/1PNLHAqcicex9EZxoaXL6xLuu4iSzWFDyot_ab1wsc5E/gviz/tq?tqx=out:json";
+
+    let allInvoices = [];
+
+    function createInvoiceCard(invoice, index) {
+      // Sanitize data
+      const invoiceNo = invoice.invoiceNo || 'N/A';
+      const name = invoice.name || 'Unknown Customer';
+      const date = invoice.date || 'Date Not Available';
+      const total = invoice.total || '0';
+      
+      console.log(`Creating card for invoice ${invoiceNo}, raw date:`, date);
+      
+      // Format total without .00 if it's a whole number
+      let formattedTotal;
+      const totalFloat = parseFloat(total);
+      if (Number.isInteger(totalFloat)) {
+        formattedTotal = totalFloat.toLocaleString('en-IN');
+      } else {
+        formattedTotal = totalFloat.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+      
+      // Format date properly
+      let formattedDate = date;
+      if (date !== 'Unknown Date' && date !== 'No Date Provided' && date !== 'Date Not Set' && date !== 'Date Not Available') {
+        // Check if it's a Date() string like "Date(2025,5,10)"
+        if (typeof date === 'string' && date.startsWith('Date(')) {
+          try {
+            // Parse the Date() string
+            const dateMatch = date.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (dateMatch) {
+              const year = parseInt(dateMatch[1]);
+              const month = parseInt(dateMatch[2]);
+              const day = parseInt(dateMatch[3]);
+              // Note: JavaScript months are 0-indexed, so we don't need to subtract 1
+              const dateObj = new Date(year, month, day);
+              const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+              const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+              const formattedYear = dateObj.getFullYear();
+              formattedDate = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+              console.log(`Parsed Date() string for invoice ${invoiceNo}:`, formattedDate);
+            }
+          } catch (e) {
+            // If parsing fails, keep the original date string
+            formattedDate = date;
+            console.log(`Failed to parse Date() string for invoice ${invoiceNo}:`, e);
+          }
+        } else {
+          // Try to parse the date and format it nicely
+          const dateObj = new Date(date);
+          if (!isNaN(dateObj.getTime())) {
+            // Format as DD-MM-YYYY
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
+            formattedDate = `${day}-${month}-${year}`;
+            console.log(`Parsed regular date for invoice ${invoiceNo}:`, formattedDate);
+          }
+        }
+      } else {
+        // Use a more user-friendly message
+        formattedDate = 'Date Not Available';
+      }
+      
+      console.log(`Final formatted date for invoice ${invoiceNo}:`, formattedDate);
+      
+      return `
+        <div class="card-hover" style="animation: fadeIn 0.3s ease forwards ${index * 0.1}s; opacity: 0;">
+          <div class="card-content">
+            <div class="bg-slate-800/40 backdrop-blur-sm rounded-lg p-6 w-full">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <h3 class="invoice-number mb-1 text-white">Invoice #${invoiceNo}</h3>
+                  <p class="text-gray-400 text-sm">${formattedDate}</p>
+                </div>
+                <div class="text-right ml-4">
+                  <p class="text-xl font-semibold amount-text" style="color: rgb(217, 119, 87);">₹${formattedTotal}</p>
+                  <p class="text-sm text-gray-400">${name}</p>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-700/50 flex justify-center space-x-4">
+                ${invoice.original ? 
+                  `<a href="${invoice.original}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Original</a>` : 
+                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
+                }
+                ${invoice.duplicate ? 
+                  `<a href="${invoice.duplicate}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Duplicate</a>` : 
+                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function displayInvoices(invoices) {
+      const container = document.getElementById('invoiceContainer');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const emptyState = document.getElementById('emptyState');
+      
+      loadingSpinner.classList.add('hidden');
+      
+      if (invoices.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      container.classList.remove('hidden');
+      
+      container.innerHTML = invoices.map((invoice, index) => createInvoiceCard(invoice, index)).join('');
+    }
+
+    function filterInvoices(searchTerm) {
+      if (!allInvoices || allInvoices.length === 0) {
+        displayInvoices([]);
+        updateSearchFeedback(0, searchTerm);
+        return;
+      }
+      
+      const filteredInvoices = allInvoices.filter(invoice => {
+        const searchLower = searchTerm.toLowerCase().trim();
+        
+        const invoiceNo = (invoice.invoiceNo || '').toString().toLowerCase();
+        const name = (invoice.name || '').toString().toLowerCase();
+        const date = (invoice.date || '').toString().toLowerCase();
+        const total = (invoice.total || '').toString().toLowerCase();
+        
+        return invoiceNo.includes(searchLower) || 
+               name.includes(searchLower) ||
+               date.includes(searchLower) ||
+               total.includes(searchLower);
+      });
+      
+      displayInvoices(filteredInvoices);
+      updateSearchFeedback(filteredInvoices.length, searchTerm);
+    }
+    
+    function updateSearchFeedback(count, searchTerm) {
+      const searchInput = document.getElementById('searchInput');
+      const searchResults = document.getElementById('searchResults');
+      const resultCount = document.getElementById('resultCount');
+      
+      if (!searchInput || !searchResults || !resultCount) {
+        return;
+      }
+      
+      resultCount.textContent = count;
+      
+      if (searchTerm.trim() === '') {
+        searchResults.style.opacity = '0';
+        searchInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        searchInput.style.boxShadow = '';
+      } else {
+        searchResults.style.opacity = '1';
+        
+        if (count === 0) {
+          searchInput.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+          searchInput.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.2)';
+          resultCount.style.color = 'rgb(239, 68, 68)';
+        } else {
+          searchInput.style.borderColor = 'rgba(34, 197, 94, 0.5)';
+          searchInput.style.boxShadow = '0 0 20px rgba(34, 197, 94, 0.2)';
+          resultCount.style.color = 'rgb(217, 119, 87)';
+        }
+      }
+    }
+
+    // Enhanced search functionality
+    let searchTimeout;
+    let searchInput;
+    
+    // Initialize search functionality after DOM loads
+    function initializeSearch() {
+      searchInput = document.getElementById('searchInput');
+      
+      if (!searchInput) {
+        return;
+      }
+      
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          filterInvoices(e.target.value);
+        }, 200);
+      });
+      
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          clearTimeout(searchTimeout);
+          filterInvoices(e.target.value);
+          e.preventDefault();
+        }
+      });
+      
+      searchInput.addEventListener('blur', (e) => {
+        if (e.target.value.trim() === '') {
+          filterInvoices('');
+        }
+      });
+      
+      searchInput.addEventListener('focus', (e) => {
+        e.target.style.borderColor = 'rgba(217, 119, 87, 0.5)';
+        e.target.style.boxShadow = '0 0 20px rgba(217, 119, 87, 0.2)';
+      });
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current year in footer
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+      
+      // Initialize search functionality
+      initializeSearch();
+      
+      // Load data from Google Sheets
+      loadInvoiceData();
+    });
+    
+    function loadInvoiceData() {
+      console.log('Fetching data from Google Sheets URL:', sheetURL);
+      fetch(sheetURL)
+        .then(res => {
+          console.log('Response status:', res.status);
+          console.log('Response headers:', [...res.headers.entries()]);
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.text();
+        })
+        .then(text => {
+          console.log('Raw response from Google Sheets:', text.substring(0, 500) + '...');
+          try {
+            // Handle potential JSON parsing issues
+            const jsonStart = text.indexOf('{');
+            const jsonEnd = text.lastIndexOf('}');
+            const jsonString = text.substring(jsonStart, jsonEnd + 1);
+            console.log('Extracted JSON string:', jsonString.substring(0, 500) + '...');
+            const json = JSON.parse(jsonString);
+            console.log('Parsed JSON:', json);
+            
+            // Check if data exists
+            if (!json.table || !json.table.rows) {
+              throw new Error('Invalid data structure in response');
+            }
+            console.log(`Found ${json.table.rows.length} rows in the data`);
+            
+            const rows = json.table.rows || [];
+            allInvoices = [];
+            
+            console.log(`Processing ${rows.length} rows from Google Sheet`);
+            
+            // Handle case where there's no data
+            if (rows.length === 0) {
+              console.log('No rows found in the Google Sheet');
+            }
+            
+            rows.forEach((row, i) => {
+              try {
+                const cells = row.c;
+                if (!cells || !Array.isArray(cells)) return;
+
+                // Safely extract cell values with better fallbacks
+                const invoiceNo = (cells[0] && cells[0].v !== null && cells[0].v !== undefined) ? String(cells[0].v) : "N/A";
+                const name = (cells[1] && cells[1].v !== null && cells[1].v !== undefined) ? String(cells[1].v) : "Unknown Customer";
+                
+                // Handle date formatting from Google Sheets
+                let date = "No Date Provided";
+                console.log(`Processing date for row ${i}, raw cell data:`, cells[2]);
+                
+                if (cells[2]) {
+                  // Check if the cell exists but is empty
+                  if (cells[2].v === null || cells[2].v === undefined || cells[2].v === '') {
+                    date = "Date Not Set";
+                    console.log(`Date cell exists but is empty for row ${i}`);
+                  } else {
+                    const dateValue = cells[2].v;
+                    console.log(`Raw date value for row ${i}:`, dateValue, typeof dateValue);
+                    
+                    // If it's a date object from Google Sheets, format it properly
+                    if (typeof dateValue === 'object') {
+                      // Use the formatted value if available, otherwise process the raw value
+                      if (dateValue.f) {
+                        date = dateValue.f; // Formatted date string
+                        console.log(`Using formatted date from Google Sheets for row ${i}:`, date);
+                      } else if (dateValue.v) {
+                        // Handle the raw date value if formatted is not available
+                        const rawDateValue = dateValue.v;
+                        console.log(`Processing raw date value from object for row ${i}:`, rawDateValue);
+                        if (typeof rawDateValue === 'string' && rawDateValue.startsWith('Date(')) {
+                          try {
+                            // Parse the Date() string
+                            const dateMatch = rawDateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+                            if (dateMatch) {
+                              const year = parseInt(dateMatch[1]);
+                              const month = parseInt(dateMatch[2]);
+                              const day = parseInt(dateMatch[3]);
+                              // Note: JavaScript months are 0-indexed
+                              const dateObj = new Date(year, month, day);
+                              const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+                              const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+                              const formattedYear = dateObj.getFullYear();
+                              date = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+                              console.log(`Parsed Date() string from object: ${date}`);
+                            } else {
+                              date = rawDateValue;
+                            }
+                          } catch (e) {
+                            date = rawDateValue;
+                          }
+                        } else {
+                          date = String(rawDateValue);
+                        }
+                      }
+                    } else if (typeof dateValue === 'string') {
+                      // Check if it's a Date() string like "Date(2025,5,10)"
+                      if (dateValue.startsWith('Date(')) {
+                        try {
+                          // Parse the Date() string
+                          const dateMatch = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+                          if (dateMatch) {
+                            const year = parseInt(dateMatch[1]);
+                            const month = parseInt(dateMatch[2]);
+                            const day = parseInt(dateMatch[3]);
+                            // Note: JavaScript months are 0-indexed, so we don't need to subtract 1
+                            const dateObj = new Date(year, month, day);
+                            const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+                            const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const formattedYear = dateObj.getFullYear();
+                            date = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+                            console.log(`Parsed Date() string for row ${i}:`, date);
+                          } else {
+                            date = dateValue;
+                            console.log(`Date() string didn't match pattern for row ${i}:`, dateValue);
+                          }
+                        } catch (e) {
+                          date = dateValue;
+                          console.log(`Error parsing Date() string for row ${i}:`, e);
+                        }
+                      } else {
+                        date = dateValue;
+                        console.log(`Using string date value for row ${i}:`, date);
+                      }
+                    } else if (typeof dateValue === 'number') {
+                      // Convert Google Sheets serial date number to actual date
+                      const dateObj = new Date((dateValue - 25569) * 86400 * 1000);
+                      const day = String(dateObj.getDate()).padStart(2, '0');
+                      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                      const year = dateObj.getFullYear();
+                      date = `${day}-${month}-${year}`;
+                      console.log(`Converted serial number to date for row ${i}:`, date);
+                    } else {
+                      // Handle other types
+                      date = String(dateValue);
+                      console.log(`Converting other type to string for row ${i}:`, date);
+                    }
+                  }
+                } else {
+                  console.log(`No date cell found for row ${i}`);
+                }
+                
+                const total = (cells[3] && cells[3].v !== null && cells[3].v !== undefined) ? String(cells[3].v) : "0";
+                const original = (cells[4] && cells[4].v !== null && cells[4].v !== undefined) ? String(cells[4].v) : "";
+                const duplicate = (cells[5] && cells[5].v !== null && cells[5].v !== undefined) ? String(cells[5].v) : "";
+
+                // Create invoice object
+                const invoice = {
+                  invoiceNo,
+                  name,
+                  date,
+                  total,
+                  original,
+                  duplicate
+                };
+                
+                console.log(`Processed invoice ${i}:`, invoice);
+                console.log(`Raw date value for invoice ${i}:`, cells[2]?.v);
+                console.log(`Formatted date for invoice ${i}:`, date);
+
+                // Only add invoice if it has essential data
+                // Allow invoices with at least an invoice number or customer name
+                if (invoiceNo !== "N/A" || name !== "Unknown Customer") {
+                  allInvoices.push(invoice);
+                  console.log(`Added invoice to list: #${invoiceNo} for ${name}`);
+                } else {
+                  console.log(`Skipped invoice due to missing essential data:`, invoice);
+                }
+              } catch (rowError) {
+                console.warn(`Error processing row ${i}:`, rowError);
+                // Continue processing other rows
+              }
+            });
+            
+            console.log(`Displaying ${allInvoices.length} invoices`);
+            displayInvoices(allInvoices);
+          } catch (parseError) {
+            console.error("Error parsing sheet data:", parseError);
+            throw parseError;
+          }
+        })
+        .catch(err => {
+          console.error("Error loading sheet:", err);
+          document.getElementById('loadingSpinner').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          
+          // Show more specific error messages
+          let errorMessage = 'There was an error loading the invoice data. Please try again later.';
+          if (err.message.includes('Failed to fetch')) {
+            errorMessage = 'Could not connect to the data source. Please check your internet connection.';
+          } else if (err.message.includes('HTTP error')) {
+            errorMessage = 'Could not access the invoice data. The data source might be unavailable.';
+          } else if (err.message.includes('JSON')) {
+            errorMessage = 'The invoice data format is invalid. Please contact support.';
+          }
+          
+          document.querySelector('#emptyState h3').textContent = 'Error Loading Data';
+          document.querySelector('#emptyState p').textContent = errorMessage;
+        });
+    }
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

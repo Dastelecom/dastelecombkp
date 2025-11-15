@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Security Code</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #000000;
+      min-height: 100vh;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Background with dotted grid -->
+  <div class="fixed top-0 left-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
+
+  <!-- Powered by TVS Credit Logo at Top Center -->
+  <div class="flex items-center justify-center pt-6">
+    <span class="text-gray-400 mr-2">Powered by</span>
+    <img src="TVS Credit.png" alt="TVS Credit Logo" class="h-8 object-contain">
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex items-center justify-center px-4 py-8">
+    <!-- Security QR Code without box -->
+    <div class="flex justify-center">
+      <img src="security-Qr_code.jpg" alt="Security QR Code" class="h-64 object-contain">
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="w-full mt-auto bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+    <div class="text-center py-6 border-t border-white/5">
+      <p class="text-gray-400">
+        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Set current year automatically
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

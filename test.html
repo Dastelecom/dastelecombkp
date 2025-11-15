@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Invoice Dashboard - Dastelecom</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html {
+      overflow-x: hidden;
+      min-height: 100vh;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    /* Full page background with radial gradient pattern - covers entire document */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      background-attachment: fixed;
+      pointer-events: none;
+      z-index: -2;
+    }
+    
+    /* Additional background layer that covers entire document */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #000000;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: -3;
+    }
+    .card-hover {
+      position: relative;
+      overflow: hidden;
+      max-width: 380px;
+      min-width: 300px;
+      margin: 0 auto;
+      border: 1px solid #374151;
+      border-radius: 0.75rem;
+      padding: 1px;
+      backdrop-filter: blur(24px);
+      z-index: 10;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(226, 203, 255, 0.4);
+    }
+    
+    .card-hover:hover::before {
+      animation: spin 1s linear infinite;
+    }
+    
+    .card-hover::before {
+      content: '';
+      position: absolute;
+      inset: -1000%;
+      animation: spin 2s linear infinite;
+      background: conic-gradient(from 90deg at 50% 50%, #E2CBFF 0%, #393BB2 50%, #E2CBFF 100%);
+      z-index: -1;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .card-content {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(24px);
+      position: relative;
+      z-index: 1;
+    }
+    
+    @keyframes whiteGlowPulse {
+      0% {
+        opacity: 0.6;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    /* Clean Search Bar - Invoice PDFs Style */
+    .search-input {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(217, 119, 87, 0.5);
+      box-shadow: 0 0 20px rgba(217, 119, 87, 0.2);
+      outline: none;
+    }
+    
+    /* Button styling for invoice cards */
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(217, 119, 87, 0.2), rgba(255, 150, 120, 0.2));
+      border: 1px solid rgba(217, 119, 87, 0.3);
+      min-width: 100px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      transition: all 0.6s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(217, 119, 87, 0.3), rgba(255, 150, 120, 0.3));
+      transform: translateY(-2px);
+      box-shadow: 
+        0 5px 15px -5px rgba(217, 119, 87, 0.4),
+        0 0 10px rgba(217, 119, 87, 0.2);
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .invoice-number {
+      font-size: 1.25rem;
+      letter-spacing: 0.025em;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    .amount-text {
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+    }
+    
+
+    
+    /* Additional white glow elements */
+    .container {
+      position: relative;
+      z-index: 10;
+    }
+    
+    .container::before {
+      display: none;
+    }
+    
+    @keyframes floatingGlow {
+      0% {
+        transform: translate(-10px, -10px) scale(0.95);
+        opacity: 0.4;
+      }
+      100% {
+        transform: translate(10px, 10px) scale(1.05);
+        opacity: 0.7;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative">
+  <!-- Background with radial gradient pattern - covers entire page -->
+  <div class="fixed inset-0 z-[-1] bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]" style="background-attachment: fixed;"></div>
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- Enhanced Header -->
+    <div class="text-center mb-12 relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent blur-sm"></div>
+      <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-fade-in relative z-10 text-white" style="text-shadow: 0 0 30px rgba(217, 119, 87, 0.8), 0 0 60px rgba(217, 119, 87, 0.4);">
+        📑 Invoice Dashboard
+      </h1>
+      <p class="text-xl relative z-10 animate-fade-in text-gray-300" style="color: rgb(217, 119, 87); text-shadow: 0 0 20px rgba(217, 119, 87, 0.5); animation-delay: 0.3s;">
+        Manage and view all your invoice records
+      </p>
+      <div class="mt-4 flex justify-center animate-fade-in" style="animation-delay: 0.6s;">
+        <div class="w-24 h-1 bg-gradient-to-r from-transparent via-orange-500/60 to-transparent rounded-full"></div>
+      </div>
+    </div>
+
+
+
+    <!-- Clean Search Bar - Invoice PDFs Style -->
+    <div class="mb-10">
+      <div class="relative max-w-2xl mx-auto">
+        <input type="text" id="searchInput" placeholder="Search by invoice number or customer name..." 
+          class="w-full search-input text-white px-5 py-4 rounded-xl pl-12 text-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <!-- Search Results Counter -->
+      <div id="searchResults" class="text-center mt-4 opacity-0 transition-opacity duration-300">
+        <p class="text-sm text-gray-400">
+          <span class="inline-flex items-center gap-2">
+            <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+            Found <span id="resultCount" class="text-orange-400 font-semibold">0</span> invoices
+          </span>
+        </p>
+      </div>
+    </div>
+    <div id="loadingSpinner" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: rgb(217, 119, 87);"></div>
+      <p class="text-gray-300 mt-4" style="color: rgb(217, 119, 87);">Loading invoices...</p>
+    </div>
+
+    <!-- Invoice Cards Container -->
+    <div id="invoiceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+      <!-- Invoice cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-12 hidden">
+      <div class="text-6xl mb-4">📋</div>
+      <h3 class="text-xl font-semibold text-white mb-2">No Invoices Found</h3>
+      <p class="text-gray-400">No invoices match your search criteria.</p>
+    </div>
+  </div>
+
+  <!-- Footer positioned at bottom -->
+  <footer class="w-full mt-16 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+    <div class="text-center py-4">
+      <p class="text-gray-400">
+        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Replace with your Google Sheet ID
+    const sheetURL = "https://docs.google.com/spreadsheets/d/1PNLHAqcicex9EZxoaXL6xLuu4iSzWFDyot_ab1wsc5E/gviz/tq?tqx=out:json";
+
+    let allInvoices = [];
+
+    function createInvoiceCard(invoice, index) {
+      return `
+        <div class="card-hover" style="animation: fadeIn 0.3s ease forwards ${index * 0.1}s; opacity: 0;">
+          <div class="card-content">
+            <div class="bg-slate-800/40 backdrop-blur-sm rounded-lg p-6 w-full">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <h3 class="invoice-number mb-1 text-white">Invoice #${invoice.invoiceNo}</h3>
+                  <p class="text-gray-400 text-sm">${invoice.date}</p>
+                </div>
+                <div class="text-right ml-4">
+                  <p class="text-xl font-semibold amount-text" style="color: rgb(217, 119, 87);">₹${invoice.total}</p>
+                  <p class="text-sm text-gray-400">${invoice.name}</p>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-700/50 flex justify-center space-x-4">
+                ${invoice.original ? 
+                  `<a href="${invoice.original}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Original</a>` : 
+                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
+                }
+                ${invoice.duplicate ? 
+                  `<a href="${invoice.duplicate}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Duplicate</a>` : 
+                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function displayInvoices(invoices) {
+      const container = document.getElementById('invoiceContainer');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const emptyState = document.getElementById('emptyState');
+      
+      loadingSpinner.classList.add('hidden');
+      
+      if (invoices.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      container.classList.remove('hidden');
+      
+      container.innerHTML = invoices.map((invoice, index) => createInvoiceCard(invoice, index)).join('');
+    }
+
+    function filterInvoices(searchTerm) {
+      if (!allInvoices || allInvoices.length === 0) {
+        displayInvoices([]);
+        updateSearchFeedback(0, searchTerm);
+        return;
+      }
+      
+      const filteredInvoices = allInvoices.filter(invoice => {
+        const searchLower = searchTerm.toLowerCase().trim();
+        
+        const invoiceNo = (invoice.invoiceNo || '').toString().toLowerCase();
+        const name = (invoice.name || '').toString().toLowerCase();
+        const date = (invoice.date || '').toString().toLowerCase();
+        const total = (invoice.total || '').toString().toLowerCase();
+        
+        return invoiceNo.includes(searchLower) || 
+               name.includes(searchLower) ||
+               date.includes(searchLower) ||
+               total.includes(searchLower);
+      });
+      
+      displayInvoices(filteredInvoices);
+      updateSearchFeedback(filteredInvoices.length, searchTerm);
+    }
+    
+    function updateSearchFeedback(count, searchTerm) {
+      const searchInput = document.getElementById('searchInput');
+      const searchResults = document.getElementById('searchResults');
+      const resultCount = document.getElementById('resultCount');
+      
+      if (!searchInput || !searchResults || !resultCount) {
+        return;
+      }
+      
+      resultCount.textContent = count;
+      
+      if (searchTerm.trim() === '') {
+        searchResults.style.opacity = '0';
+        searchInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        searchInput.style.boxShadow = '';
+      } else {
+        searchResults.style.opacity = '1';
+        
+        if (count === 0) {
+          searchInput.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+          searchInput.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.2)';
+          resultCount.style.color = 'rgb(239, 68, 68)';
+        } else {
+          searchInput.style.borderColor = 'rgba(34, 197, 94, 0.5)';
+          searchInput.style.boxShadow = '0 0 20px rgba(34, 197, 94, 0.2)';
+          resultCount.style.color = 'rgb(217, 119, 87)';
+        }
+      }
+    }
+
+    // Enhanced search functionality
+    let searchTimeout;
+    let searchInput;
+    
+    // Initialize search functionality after DOM loads
+    function initializeSearch() {
+      searchInput = document.getElementById('searchInput');
+      
+      if (!searchInput) {
+        return;
+      }
+      
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          filterInvoices(e.target.value);
+        }, 200);
+      });
+      
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          clearTimeout(searchTimeout);
+          filterInvoices(e.target.value);
+          e.preventDefault();
+        }
+      });
+      
+      searchInput.addEventListener('blur', (e) => {
+        if (e.target.value.trim() === '') {
+          filterInvoices('');
+        }
+      });
+      
+      searchInput.addEventListener('focus', (e) => {
+        e.target.style.borderColor = 'rgba(217, 119, 87, 0.5)';
+        e.target.style.boxShadow = '0 0 20px rgba(217, 119, 87, 0.2)';
+      });
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current year in footer
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+      
+      // Initialize search functionality
+      initializeSearch();
+      
+      // Load data from Google Sheets
+      loadInvoiceData();
+    });
+    
+    function loadInvoiceData() {
+      fetch(sheetURL)
+        .then(res => res.text())
+        .then(text => {
+          const json = JSON.parse(text.substr(47).slice(0, -2));
+          const rows = json.table.rows;
+
+          allInvoices = [];
+          
+          rows.forEach((row, i) => {
+            const cells = row.c;
+            if (!cells) return;
+
+            const invoiceNo = cells[0]?.v || "";
+            const name = cells[1]?.v || "";
+            const date = cells[2]?.v || "";
+            const total = cells[3]?.v || "";
+            const original = cells[4]?.v || "";
+            const duplicate = cells[5]?.v || "";
+
+            if (!invoiceNo && !name && !date) return;
+
+            allInvoices.push({
+              invoiceNo,
+              name,
+              date,
+              total,
+              original,
+              duplicate
+            });
+          });
+          
+          displayInvoices(allInvoices);
+        })
+        .catch(err => {
+          console.error("Error loading sheet:", err);
+          document.getElementById('loadingSpinner').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          document.querySelector('#emptyState h3').textContent = 'Error Loading Data';
+          document.querySelector('#emptyState p').textContent = 'There was an error loading the invoice data. Please try again later.';
+        });
+    }
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

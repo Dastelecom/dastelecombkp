@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Analytics Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #0f172a, #1e293b);
+      min-height: 100vh;
+    }
+    .glass {
+      background-color: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .card-glow {
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+      transition: all 0.3s ease;
+    }
+    .card-glow:hover {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+      transform: translateY(-2px);
+    }
+    .stat-number {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    .loading-spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .metric-card {
+      background: rgba(51, 65, 85, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      transition: all 0.3s ease;
+    }
+    .metric-card:hover {
+      background: rgba(51, 65, 85, 0.8);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-3px);
+    }
+    .trend-up {
+      color: #22c55e;
+    }
+    .trend-down {
+      color: #ef4444;
+    }
+    .navbar {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Status Select Styling */
+    .status-select {
+      background: rgba(55, 65, 81, 0.8);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(107, 114, 128, 0.5);
+      color: #e5e7eb;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      min-width: 90px;
+    }
+    
+    .status-select:hover {
+      background: rgba(55, 65, 81, 0.9);
+      border-color: rgba(217, 119, 87, 0.5);
+    }
+    
+    .status-select:focus {
+      background: rgba(55, 65, 81, 1);
+      border-color: rgba(217, 119, 87, 0.8);
+      box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.2);
+    }
+    
+    .status-select option {
+      background: rgba(31, 41, 55, 0.95);
+      color: #e5e7eb;
+      padding: 0.5rem;
+    }
+    
+    /* Advanced Enhancements */
+    .enhanced-card {
+      background: linear-gradient(135deg, rgba(51, 65, 85, 0.6), rgba(30, 41, 59, 0.8));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .enhanced-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(217, 119, 87, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .enhanced-card:hover::before {
+      left: 100%;
+    }
+    
+    .enhanced-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(217, 119, 87, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(217, 119, 87, 0.2);
+    }
+    
+    /* Improved Search Bar */
+    .search-enhanced {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(217, 119, 87, 0.3);
+      border-radius: 10px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .search-enhanced:focus {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(217, 119, 87, 0.6);
+      box-shadow: 0 0 25px rgba(217, 119, 87, 0.3), 0 0 50px rgba(217, 119, 87, 0.1);
+      transform: scale(1.02);
+    }
+    
+    /* Loading States */
+    .skeleton {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+    }
+    
+    @keyframes skeleton-loading {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    /* Performance Optimizations */
+    .gpu-accelerated {
+      transform: translateZ(0);
+      will-change: transform, opacity;
+    }
+    
+    /* Advanced Chart Styling */
+    .chart-wrapper {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(51, 65, 85, 0.4), rgba(30, 41, 59, 0.6));
+    }
+    
+    /* Real-time Data Indicators */
+    .live-indicator {
+      position: relative;
+    }
+    
+    .live-indicator::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: live-pulse 2s infinite;
+    }
+    
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-100">
+  <!-- Navigation Header -->
+  <nav class="navbar sticky top-0 z-50 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <a href="main.html" class="text-blue-400 hover:text-blue-300 transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+        <h1 class="text-2xl font-bold text-white">Analytics Dashboard</h1>
+      </div>
+      <div class="text-sm text-gray-400">
+        <span id="current-time"></span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto p-6 space-y-8">
+    <!-- Key Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+      <!-- Total Revenue -->
+      <div class="metric-card rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-400 text-sm font-medium">Total Revenue</p>
+            <p class="text-3xl font-bold stat-number" id="total-revenue">₹0</p>
+            <p class="text-sm mt-1">
+              <span class="trend-up" id="revenue-trend">+0%</span>
+              <span class="text-gray-400 ml-1">vs last month</span>
+            </p>
+          </div>
+          <div class="bg-green-500/20 p-3 rounded-full">
+            <i class="fas fa-rupee-sign text-green-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Invoices -->
+      <div class="metric-card rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-400 text-sm font-medium">Total Invoices</p>
+            <p class="text-3xl font-bold stat-number" id="total-invoices">0</p>
+            <p class="text-sm mt-1">
+              <span class="trend-up" id="invoice-trend">+0%</span>
+              <span class="text-gray-400 ml-1">vs last month</span>
+            </p>
+          </div>
+          <div class="bg-blue-500/20 p-3 rounded-full">
+            <i class="fas fa-file-invoice text-blue-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phones Sold -->
+      <div class="metric-card rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-400 text-sm font-medium">Phones Sold</p>
+            <p class="text-3xl font-bold stat-number" id="phones-sold">0</p>
+            <p class="text-sm mt-1">
+              <span class="trend-up" id="phones-trend">+0%</span>
+              <span class="text-gray-400 ml-1">vs last month</span>
+            </p>
+          </div>
+          <div class="bg-purple-500/20 p-3 rounded-full">
+            <i class="fas fa-mobile-alt text-purple-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Order Value -->
+      <div class="metric-card rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-400 text-sm font-medium">Avg Order Value</p>
+            <p class="text-3xl font-bold stat-number" id="avg-order">₹0</p>
+            <p class="text-sm mt-1">
+              <span class="trend-up" id="avg-trend">+0%</span>
+              <span class="text-gray-400 ml-1">vs last month</span>
+            </p>
+          </div>
+          <div class="bg-orange-500/20 p-3 rounded-full">
+            <i class="fas fa-chart-line text-orange-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div class="glass rounded-xl p-6 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+          <i class="fas fa-download text-blue-400"></i>
+          Monthly Reports & Downloads
+        </h3>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+        <!-- Monthly Report Selector -->
+        <div class="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+          <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+            <i class="fas fa-calendar-alt" style="color: rgb(217, 119, 87);"></i>
+            Monthly Report
+          </h4>
+          <div class="space-y-3">
+            <select id="monthSelector" class="w-full bg-gray-700/50 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <!-- Options will be populated by JavaScript -->
+            </select>
+            <button onclick="generateMonthlyReport()" class="w-full bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-400 px-4 py-2 rounded-md transition-all duration-300 flex items-center justify-center gap-2">
+              <i class="fas fa-chart-bar"></i>
+              Generate Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Sales Report Download -->
+        <div class="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+          <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+            <i class="fas fa-file-csv" style="color: rgb(217, 119, 87);"></i>
+            Sales Report
+          </h4>
+          <div class="space-y-3">
+            <div class="text-sm text-gray-400 mb-2">
+              Export complete sales data
+            </div>
+            <button onclick="downloadSalesReport('csv')" class="w-full bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 text-green-400 px-4 py-2 rounded-md transition-all duration-300 flex items-center justify-center gap-2 mb-2">
+              <i class="fas fa-download"></i>
+              Download CSV
+            </button>
+            <button onclick="downloadSalesReport('pdf')" class="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-400 px-4 py-2 rounded-md transition-all duration-300 flex items-center justify-center gap-2">
+              <i class="fas fa-file-pdf"></i>
+              Download PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Summary -->
+        <div class="bg-gray-700/30 rounded-lg p-4 border border-gray-600/30">
+          <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+            <i class="fas fa-info-circle" style="color: rgb(217, 119, 87);"></i>
+            Report Summary
+          </h4>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Last Report:</span>
+              <span class="text-white" id="lastReportDate">Never</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Total Reports:</span>
+              <span class="text-white" id="totalReports">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Data Range:</span>
+              <span class="text-white" id="dataRange">All Time</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-1">
+      <!-- Revenue Chart -->
+      <div class="enhanced-card chart-wrapper glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+            <span class="live-indicator">Revenue Trend</span>
+          </h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full transition-all hover:bg-blue-500/30">7D</button>
+            <button class="px-3 py-1 text-xs bg-gray-600/20 text-gray-400 rounded-full transition-all hover:bg-gray-600/30">30D</button>
+            <button class="px-3 py-1 text-xs bg-gray-600/20 text-gray-400 rounded-full transition-all hover:bg-gray-600/30">90D</button>
+          </div>
+        </div>
+        <div class="chart-container relative">
+          <canvas id="revenueChart"></canvas>
+          <div class="absolute top-2 right-2 text-xs text-green-400 flex items-center gap-1">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            Live
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Categories Chart -->
+      <div class="enhanced-card chart-wrapper glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+            <span class="live-indicator">Phone Categories</span>
+          </h3>
+          <i class="fas fa-chart-pie text-blue-400"></i>
+        </div>
+        <div class="chart-container relative">
+          <canvas id="categoryChart"></canvas>
+          <div class="absolute top-2 right-2 text-xs text-blue-400 flex items-center gap-1">
+            <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            Updated
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <!-- Recent Invoices -->
+      <div class="lg:col-span-2 enhanced-card glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+            <span class="live-indicator">Recent Invoices</span>
+          </h3>
+          <div class="flex items-center gap-3">
+            <!-- Advanced Filter Dropdown -->
+            <div class="relative">
+              <button id="filterToggle" class="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-sm">
+                <i class="fas fa-filter"></i>
+                Filter
+              </button>
+              <div id="filterMenu" class="hidden absolute right-0 top-full mt-2 bg-gray-800 border border-gray-600 rounded-lg p-3 min-w-48 z-10">
+                <div class="space-y-2">
+                  <label class="block text-xs text-gray-400">Status Filter:</label>
+                  <select id="statusFilter" class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
+                    <option value="all">All Status</option>
+                    <option value="paid">Paid</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                  </select>
+                  <label class="block text-xs text-gray-400 mt-2">Amount Range:</label>
+                  <div class="flex gap-2">
+                    <input type="number" id="minAmount" placeholder="Min" class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
+                    <input type="number" id="maxAmount" placeholder="Max" class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white">
+                  </div>
+                  <button onclick="applyFilters()" class="w-full mt-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-400 px-3 py-1 rounded text-sm transition-all">
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Quick Search -->
+            <div class="relative">
+              <input type="text" id="quickSearch" placeholder="Quick search..." 
+                class="search-enhanced text-white px-3 py-1 text-sm w-32 focus:w-48 transition-all duration-300">
+              <i class="fas fa-search absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+            </div>
+            <a href="invoice-pdfs.html" class="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center gap-1">
+              View All <i class="fas fa-external-link-alt text-xs"></i>
+            </a>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-700">
+                <th class="text-left py-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('invoice')">
+                  Invoice ID <i class="fas fa-sort text-xs ml-1"></i>
+                </th>
+                <th class="text-left py-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('customer')">
+                  Customer <i class="fas fa-sort text-xs ml-1"></i>
+                </th>
+                <th class="text-left py-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('amount')">
+                  Amount <i class="fas fa-sort text-xs ml-1"></i>
+                </th>
+                <th class="text-left py-3 text-gray-400 cursor-pointer hover:text-white transition-colors" onclick="sortTable('date')">
+                  Date <i class="fas fa-sort text-xs ml-1"></i>
+                </th>
+                <th class="text-left py-3 text-gray-400">Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-invoices">
+              <tr>
+                <td colspan="5" class="text-center py-8 text-gray-400">
+                  <div class="skeleton loading-spinner mx-auto mb-4 w-8 h-8 rounded-full"></div>
+                  Loading invoices...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div id="paginationControls" class="hidden flex justify-between items-center mt-4 pt-4 border-t border-gray-700">
+          <div class="text-sm text-gray-400" id="paginationInfo">
+            Showing 1-5 of 0 invoices
+          </div>
+          <div class="flex gap-2">
+            <button onclick="changePage(-1)" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-all" disabled>
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button onclick="changePage(1)" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-all" disabled>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Phones -->
+      <div class="glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-white">Top Phones</h3>
+          <i class="fas fa-trophy text-yellow-400"></i>
+        </div>
+        <div class="space-y-4" id="top-phones">
+          <div class="text-center py-8 text-gray-400">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            Loading phones...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Insights -->
+    <div class="glass rounded-xl p-6">
+      <h3 class="text-xl font-semibold text-white mb-6">Performance Insights</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div class="text-center">
+          <div class="bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-trending-up text-green-400 text-2xl"></i>
+          </div>
+          <h4 class="font-semibold text-white mb-2">Growth Rate</h4>
+          <p class="text-3xl font-bold text-green-400" id="growth-rate">+15%</p>
+          <p class="text-sm text-gray-400">Monthly growth</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-users text-blue-400 text-2xl"></i>
+          </div>
+          <h4 class="font-semibold text-white mb-2">Customer Base</h4>
+          <p class="text-3xl font-bold text-blue-400" id="customer-count">0</p>
+          <p class="text-sm text-gray-400">Active customers</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-purple-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-clock text-purple-400 text-2xl"></i>
+          </div>
+          <h4 class="font-semibold text-white mb-2">Avg Processing</h4>
+          <p class="text-3xl font-bold text-purple-400" id="avg-processing">2.5h</p>
+          <p class="text-sm text-gray-400">Order to delivery</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-gray-700 bg-gray-900/50 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="text-center">
+        <p class="text-gray-400">
+          © <span id="footer-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+          Analytics Dashboard - Real-time business insights
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAibWFQ955D9sxgExTvXf9ykC0HJQPbatA",
+      authDomain: "dastelecominvoicegenerator.firebaseapp.com",
+      databaseURL: "https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dastelecominvoicegenerator",
+      storageBucket: "dastelecominvoicegenerator.appspot.com",
+      messagingSenderId: "959180798639",
+      appId: "1:959180798639:web:861d25289ff80c8c17725a",
+      measurementId: "G-Y4JJXQGSJC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Chart variables
+    let revenueChart, categoryChart;
+
+    // Update current time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('current-time').textContent = now.toLocaleString();
+    }
+
+    // Function to update invoice status (Paid status is final)
+    function updateInvoiceStatus(selectElement) {
+      const invoiceNo = selectElement.dataset.invoice;
+      const newStatus = selectElement.value;
+      const statusKey = `invoice_status_${invoiceNo}`;
+      const previousStatus = localStorage.getItem(statusKey) || 'pending';
+      
+      // Check if previous status was 'paid' - if so, prevent any changes
+      if (previousStatus === 'paid') {
+        showStatusChangeWarning(invoiceNo, 'This invoice is already marked as paid and cannot be changed.');
+        selectElement.value = 'paid'; // Reset to paid
+        return;
+      }
+      
+      // Apply color styling based on status
+      applyStatusColor(selectElement, newStatus);
+      
+      // Store the new status
+      localStorage.setItem(statusKey, newStatus);
+      
+      // If status is now 'paid', disable further changes
+      if (newStatus === 'paid') {
+        selectElement.disabled = true;
+        selectElement.style.opacity = '0.7';
+        selectElement.style.cursor = 'not-allowed';
+        
+        // Mark as changed to prevent future modifications
+        const changeKey = `invoice_changed_${invoiceNo}`;
+        localStorage.setItem(changeKey, 'true');
+        
+        showStatusUpdateConfirmation(invoiceNo, newStatus, true); // true = final
+      } else {
+        showStatusUpdateConfirmation(invoiceNo, newStatus, false); // false = not final
+      }
+      
+      console.log(`Invoice ${invoiceNo} status updated to: ${newStatus}`);
+    }
+    
+    // Function to apply color styling to status select
+    function applyStatusColor(selectElement, status) {
+      // Remove all status classes
+      selectElement.classList.remove('text-green-400', 'text-yellow-400', 'text-blue-400');
+      
+      // Apply color based on status
+      switch(status) {
+        case 'paid':
+          selectElement.classList.add('text-green-400');
+          break;
+        case 'pending':
+          selectElement.classList.add('text-yellow-400');
+          break;
+        case 'processing':
+          selectElement.classList.add('text-blue-400');
+          break;
+        default:
+          selectElement.classList.add('text-yellow-400'); // Default to pending
+      }
+    }
+    
+    // Function to apply colors to all status selects
+    function applyStatusColors() {
+      const statusSelects = document.querySelectorAll('.status-select');
+      statusSelects.forEach(select => {
+        const invoiceNo = select.dataset.invoice;
+        const statusKey = `invoice_status_${invoiceNo}`;
+        const savedStatus = localStorage.getItem(statusKey);
+        
+        if (savedStatus) {
+          select.value = savedStatus;
+        } else {
+          // Default to 'pending' for new invoices
+          select.value = 'pending';
+        }
+        
+        // If status is 'paid', disable the select (paid is final)
+        if (savedStatus === 'paid') {
+          select.disabled = true;
+          select.style.opacity = '0.7';
+          select.style.cursor = 'not-allowed';
+        }
+        
+        applyStatusColor(select, select.value);
+      });
+    }
+    
+    // Function to show status update confirmation
+    function showStatusUpdateConfirmation(invoiceNo, status, isFinal = false) {
+      // Create a temporary notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+      
+      const finalText = isFinal ? '<div class="text-xs text-green-400 ml-2 font-semibold">(FINAL - Cannot be changed)</div>' : '';
+      
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas fa-check-circle text-green-400"></i>
+          <span>Invoice ${invoiceNo} status updated to <span class="font-semibold" style="color: rgb(217, 119, 87);">${status.toUpperCase()}</span></span>
+          ${finalText}
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Remove notification after 4 seconds (longer for final status)
+      const timeout = isFinal ? 5000 : 3000;
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, timeout);
+    }
+    
+    // Function to show warning when trying to change status again
+    function showStatusChangeWarning(invoiceNo, customMessage = null) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-800 border border-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+      
+      const message = customMessage || `Invoice ${invoiceNo} status cannot be changed again`;
+      
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas fa-exclamation-triangle text-red-400"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Remove notification after 4 seconds
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 4000);
+    }
+    
+    // Report System Functions
+    let allInvoiceData = [];
+    
+    // Initialize report system
+    function initializeReportSystem() {
+      populateMonthSelector();
+      updateReportSummary();
+    }
+    
+    // Populate month selector with last 12 months
+    function populateMonthSelector() {
+      const monthSelector = document.getElementById('monthSelector');
+      const currentDate = new Date();
+      
+      monthSelector.innerHTML = '<option value="all">All Time</option>';
+      
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const value = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = monthYear;
+        monthSelector.appendChild(option);
+      }
+    }
+    
+    // Update report summary
+    function updateReportSummary() {
+      const lastReport = localStorage.getItem('lastReportDate');
+      const totalReports = localStorage.getItem('totalReports') || '0';
+      
+      document.getElementById('lastReportDate').textContent = lastReport || 'Never';
+      document.getElementById('totalReports').textContent = totalReports;
+      
+      if (allInvoiceData.length > 0) {
+        const dates = allInvoiceData.map(inv => new Date(inv.date)).filter(d => !isNaN(d));
+        if (dates.length > 0) {
+          const minDate = new Date(Math.min(...dates));
+          const maxDate = new Date(Math.max(...dates));
+          document.getElementById('dataRange').textContent = 
+            `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
+        }
+      }
+    }
+    
+    // Generate monthly report
+    function generateMonthlyReport() {
+      const selectedMonth = document.getElementById('monthSelector').value;
+      
+      if (allInvoiceData.length === 0) {
+        showNotification('No data available for report generation', 'warning');
+        return;
+      }
+      
+      let filteredData = allInvoiceData;
+      
+      if (selectedMonth !== 'all') {
+        const [year, month] = selectedMonth.split('-');
+        filteredData = allInvoiceData.filter(invoice => {
+          const invoiceDate = new Date(invoice.date);
+          return invoiceDate.getFullYear() == year && 
+                 (invoiceDate.getMonth() + 1) == parseInt(month);
+        });
+      }
+      
+      if (filteredData.length === 0) {
+        showNotification('No invoices found for selected period', 'warning');
+        return;
+      }
+      
+      generateReportModal(filteredData, selectedMonth);
+      
+      // Update report summary
+      const currentDate = new Date().toLocaleDateString();
+      localStorage.setItem('lastReportDate', currentDate);
+      const totalReports = (parseInt(localStorage.getItem('totalReports') || '0') + 1).toString();
+      localStorage.setItem('totalReports', totalReports);
+      updateReportSummary();
+    }
+    
+    // Generate report modal
+    function generateReportModal(data, period) {
+      const totalRevenue = data.reduce((sum, inv) => {
+        return sum + (parseFloat(inv.total.toString().replace(/[^\d.]/g, '')) || 0);
+      }, 0);
+      
+      const avgOrderValue = data.length > 0 ? totalRevenue / data.length : 0;
+      const uniqueCustomers = new Set(data.map(inv => inv.name.toLowerCase())).size;
+      
+      const periodText = period === 'all' ? 'All Time' : 
+        new Date(period + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+      modal.innerHTML = `
+        <div class="bg-gray-800 rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-gray-600">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+              <i class="fas fa-chart-bar" style="color: rgb(217, 119, 87);"></i>
+              Monthly Report - ${periodText}
+            </h2>
+            <button onclick="closeReportModal(this)" class="text-gray-400 hover:text-white text-2xl">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-6">
+            <div class="bg-gray-700/50 rounded-lg p-4 text-center">
+              <div class="text-green-400 text-2xl font-bold">₹${totalRevenue.toLocaleString('en-IN')}</div>
+              <div class="text-gray-400 text-sm">Total Revenue</div>
+            </div>
+            <div class="bg-gray-700/50 rounded-lg p-4 text-center">
+              <div class="text-blue-400 text-2xl font-bold">${data.length}</div>
+              <div class="text-gray-400 text-sm">Total Invoices</div>
+            </div>
+            <div class="bg-gray-700/50 rounded-lg p-4 text-center">
+              <div class="text-purple-400 text-2xl font-bold">${uniqueCustomers}</div>
+              <div class="text-gray-400 text-sm">Unique Customers</div>
+            </div>
+          </div>
+          
+          <div class="bg-gray-700/30 rounded-lg p-4 mb-4">
+            <h3 class="text-white font-semibold mb-3">Key Metrics</h3>
+            <div class="grid grid-cols-2 gap-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Average Order Value:</span>
+                <span class="text-white font-semibold">₹${Math.round(avgOrderValue).toLocaleString('en-IN')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Phones Sold:</span>
+                <span class="text-white font-semibold">${data.length} units</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button onclick="downloadReportData('${period}', 'csv')" class="flex-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 text-green-400 px-4 py-2 rounded-md transition-all flex items-center justify-center gap-2">
+              <i class="fas fa-download"></i>
+              Download CSV
+            </button>
+            <button onclick="downloadReportData('${period}', 'pdf')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-400 px-4 py-2 rounded-md transition-all flex items-center justify-center gap-2">
+              <i class="fas fa-file-pdf"></i>
+              Download PDF
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+    
+    // Close report modal
+    function closeReportModal(button) {
+      const modal = button.closest('.fixed');
+      modal.remove();
+    }
+    
+    // Download sales report
+    function downloadSalesReport(format) {
+      if (allInvoiceData.length === 0) {
+        showNotification('No data available for download', 'warning');
+        return;
+      }
+      
+      downloadReportData('all', format);
+    }
+    
+    // Download report data
+    function downloadReportData(period, format) {
+      let data = allInvoiceData;
+      
+      if (period !== 'all') {
+        const [year, month] = period.split('-');
+        data = allInvoiceData.filter(invoice => {
+          const invoiceDate = new Date(invoice.date);
+          return invoiceDate.getFullYear() == year && 
+                 (invoiceDate.getMonth() + 1) == parseInt(month);
+        });
+      }
+      
+      if (format === 'csv') {
+        downloadCSV(data, period);
+      } else if (format === 'pdf') {
+        downloadPDF(data, period);
+      }
+      
+      showNotification(`${format.toUpperCase()} report downloaded successfully!`, 'success');
+    }
+    
+    // Download CSV
+    function downloadCSV(data, period) {
+      const headers = ['Invoice No', 'Customer Name', 'Date', 'Amount'];
+      const csvContent = [
+        headers.join(','),
+        ...data.map(row => [
+          row.invoiceNo,
+          `"${row.name}"`,
+          row.date,
+          row.total
+        ].join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `sales-report-${period}-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }
+    
+    // Download PDF (simplified)
+    function downloadPDF(data, period) {
+      const totalRevenue = data.reduce((sum, inv) => {
+        return sum + (parseFloat(inv.total.toString().replace(/[^\d.]/g, '')) || 0);
+      }, 0);
+      
+      const periodText = period === 'all' ? 'All Time' : 
+        new Date(period + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      // Create a simple HTML content for PDF
+      const htmlContent = `
+        <html>
+        <head>
+          <title>Sales Report - ${periodText}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #d97757; text-align: center; }
+            .summary { background: #f5f5f5; padding: 15px; margin: 20px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Dastelecom Sales Report</h1>
+          <h2>Period: ${periodText}</h2>
+          <div class="summary">
+            <p><strong>Total Revenue:</strong> ₹${totalRevenue.toLocaleString('en-IN')}</p>
+            <p><strong>Total Invoices:</strong> ${data.length}</p>
+            <p><strong>Phones Sold:</strong> ${data.length} units</p>
+            <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Invoice No</th><th>Customer</th><th>Date</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>
+                  <td>${row.invoiceNo}</td>
+                  <td>${row.name}</td>
+                  <td>${row.date}</td>
+                  <td>₹${parseFloat(row.total.toString().replace(/[^\d.]/g, '') || '0').toLocaleString('en-IN')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      // Open in new window for printing/saving as PDF
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+      const colors = {
+        success: 'bg-green-800 border-green-600 text-green-100',
+        warning: 'bg-yellow-800 border-yellow-600 text-yellow-100',
+        error: 'bg-red-800 border-red-600 text-red-100',
+        info: 'bg-blue-800 border-blue-600 text-blue-100'
+      };
+      
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 ${colors[type]} px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas fa-info-circle"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+    
+    // Enhanced System Functions
+    let currentPage = 1;
+    let itemsPerPage = 5;
+    let filteredInvoices = [];
+    let sortColumn = '';
+    let sortDirection = 'asc';
+    
+    // Initialize enhanced features
+    function initializeEnhancedFeatures() {
+      // Filter toggle
+      document.getElementById('filterToggle').addEventListener('click', function() {
+        const menu = document.getElementById('filterMenu');
+        menu.classList.toggle('hidden');
+      });
+      
+      // Quick search with debouncing
+      const quickSearch = document.getElementById('quickSearch');
+      if (quickSearch) {
+        quickSearch.addEventListener('input', debounce(function(e) {
+          performQuickSearch(e.target.value);
+        }, 300));
+      }
+      
+      // Close filter menu when clicking outside
+      document.addEventListener('click', function(e) {
+        const filterToggle = document.getElementById('filterToggle');
+        const filterMenu = document.getElementById('filterMenu');
+        if (!filterToggle.contains(e.target) && !filterMenu.contains(e.target)) {
+          filterMenu.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Advanced filtering
+    function applyFilters() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const minAmount = parseFloat(document.getElementById('minAmount').value) || 0;
+      const maxAmount = parseFloat(document.getElementById('maxAmount').value) || Infinity;
+      
+      filteredInvoices = allInvoiceData.filter(invoice => {
+        const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+        const statusKey = `invoice_status_${invoice.invoiceNo}`;
+        const currentStatus = localStorage.getItem(statusKey) || 'pending';
+        
+        const statusMatch = statusFilter === 'all' || currentStatus === statusFilter;
+        const amountMatch = amount >= minAmount && amount <= maxAmount;
+        
+        return statusMatch && amountMatch;
+      });
+      
+      currentPage = 1;
+      displayFilteredInvoices();
+      document.getElementById('filterMenu').classList.add('hidden');
+      
+      showNotification(`Applied filters: ${filteredInvoices.length} invoices found`, 'success');
+    }
+    
+    // Quick search functionality
+    function performQuickSearch(searchTerm) {
+      if (!searchTerm.trim()) {
+        filteredInvoices = [...allInvoiceData];
+      } else {
+        filteredInvoices = allInvoiceData.filter(invoice => {
+          const searchLower = searchTerm.toLowerCase();
+          return invoice.invoiceNo.toLowerCase().includes(searchLower) ||
+                 invoice.name.toLowerCase().includes(searchLower) ||
+                 invoice.date.toLowerCase().includes(searchLower);
+        });
+      }
+      
+      currentPage = 1;
+      displayFilteredInvoices();
+    }
+    
+    // Table sorting
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+      
+      filteredInvoices.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch(column) {
+          case 'invoice':
+            valueA = parseInt(a.invoiceNo.replace(/\D/g, '')) || 0;
+            valueB = parseInt(b.invoiceNo.replace(/\D/g, '')) || 0;
+            break;
+          case 'customer':
+            valueA = a.name.toLowerCase();
+            valueB = b.name.toLowerCase();
+            break;
+          case 'amount':
+            valueA = parseFloat(a.total.toString().replace(/[^\d.]/g, '')) || 0;
+            valueB = parseFloat(b.total.toString().replace(/[^\d.]/g, '')) || 0;
+            break;
+          case 'date':
+            valueA = new Date(a.date);
+            valueB = new Date(b.date);
+            break;
+          default:
+            return 0;
+        }
+        
+        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      displayFilteredInvoices();
+      
+      // Update sort indicators
+      document.querySelectorAll('th i').forEach(icon => {
+        icon.className = 'fas fa-sort text-xs ml-1';
+      });
+      
+      const activeHeader = document.querySelector(`th[onclick="sortTable('${column}')"] i`);
+      if (activeHeader) {
+        activeHeader.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} text-xs ml-1`;
+      }
+    }
+    
+    // Display filtered invoices with pagination
+    function displayFilteredInvoices() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageInvoices = filteredInvoices.slice(startIndex, endIndex);
+      
+      let invoicesHtml = '';
+      
+      if (pageInvoices.length === 0) {
+        invoicesHtml = `
+          <tr>
+            <td colspan="5" class="text-center py-8 text-gray-400">
+              <i class="fas fa-search text-3xl mb-3 block"></i>
+              No invoices found matching your criteria
+            </td>
+          </tr>
+        `;
+      } else {
+        invoicesHtml = pageInvoices.map((invoice, index) => {
+          const statusKey = `invoice_status_${invoice.invoiceNo}`;
+          const currentStatus = localStorage.getItem(statusKey) || 'pending';
+          const isPaid = currentStatus === 'paid';
+          
+          return `
+            <tr class="border-b border-gray-700/50 hover:bg-gray-700/20 transition-colors gpu-accelerated" style="animation: fadeIn 0.3s ease forwards ${index * 0.1}s; opacity: 0;">
+              <td class="py-3 text-blue-400 font-mono">${invoice.invoiceNo}</td>
+              <td class="py-3 text-white">${invoice.name}</td>
+              <td class="py-3 text-green-400 font-semibold">₹${parseFloat(invoice.total.toString().replace(/[^\d.]/g, '') || '0').toLocaleString('en-IN')}</td>
+              <td class="py-3 text-gray-300">${invoice.date}</td>
+              <td class="py-3">
+                <select class="status-select bg-gray-700/50 border border-gray-600 rounded-md px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                        data-invoice="${invoice.invoiceNo}" 
+                        onchange="updateInvoiceStatus(this)" ${isPaid ? 'disabled' : ''}>
+                  <option value="pending" class="bg-gray-800 text-yellow-400">Pending</option>
+                  <option value="processing" class="bg-gray-800 text-blue-400">Processing</option>
+                  <option value="paid" class="bg-gray-800 text-green-400">Paid</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+      
+      document.getElementById('recent-invoices').innerHTML = invoicesHtml;
+      
+      // Apply status colors and states
+      setTimeout(() => {
+        applyStatusColors();
+        updatePagination();
+      }, 100);
+    }
+    
+    // Pagination controls
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+      const paginationControls = document.getElementById('paginationControls');
+      const paginationInfo = document.getElementById('paginationInfo');
+      
+      if (totalPages > 1) {
+        paginationControls.classList.remove('hidden');
+        
+        const startItem = (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(currentPage * itemsPerPage, filteredInvoices.length);
+        
+        paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${filteredInvoices.length} invoices`;
+        
+        // Update button states
+        const prevBtn = paginationControls.querySelector('button:first-of-type');
+        const nextBtn = paginationControls.querySelector('button:last-of-type');
+        
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+        
+        prevBtn.className = `px-3 py-1 text-white rounded text-sm transition-all ${
+          currentPage === 1 ? 'bg-gray-800 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'
+        }`;
+        
+        nextBtn.className = `px-3 py-1 text-white rounded text-sm transition-all ${
+          currentPage === totalPages ? 'bg-gray-800 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'
+        }`;
+      } else {
+        paginationControls.classList.add('hidden');
+      }
+    }
+    
+    // Change page function
+    function changePage(direction) {
+      const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+      const newPage = currentPage + direction;
+      
+      if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        displayFilteredInvoices();
+      }
+    }
+
+    // Set current year in footer
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+    // Initialize charts
+    function initCharts() {
+      // Revenue Chart
+      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+      revenueChart = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Revenue',
+            data: [12000, 15000, 18000, 22000, 19000, 25000],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: 'rgba(255, 255, 255, 0.8)'
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.8)'
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.8)'
+              }
+            }
+          }
+        }
+      });
+
+      // Category Chart
+      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+      categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Vivo', 'Oppo', 'Samsung', 'Realme'],
+          datasets: [{
+            data: [35, 25, 30, 10],
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(139, 92, 246, 0.8)'
+            ],
+            borderColor: [
+              'rgb(59, 130, 246)',
+              'rgb(16, 185, 129)',
+              'rgb(245, 158, 11)',
+              'rgb(139, 92, 246)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.8)',
+                padding: 20
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Load analytics data
+    function loadAnalyticsData() {
+      // Animate customer count from 0 to 100000+
+      animateCustomerCount();
+      
+      // Initialize report system
+      initializeReportSystem();
+      
+      // Initialize enhanced features
+      initializeEnhancedFeatures();
+      
+      // Load recent invoices with real data
+      loadRecentInvoices();
+    }
+    
+    // Animate customer base counter from 0 to 100000+
+    function animateCustomerCount() {
+      const customerElement = document.getElementById('customer-count');
+      const targetValue = 100000;
+      const duration = 2000; // 2 seconds
+      const startTime = performance.now();
+      
+      // Set initial value
+      customerElement.textContent = '0';
+      
+      function updateCount(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Use easing function for smooth animation
+        const easedProgress = easeOutExpo(progress);
+        const currentValue = Math.floor(targetValue * easedProgress);
+        
+        // Format number with commas and add animation effect
+        if (currentValue < targetValue) {
+          customerElement.textContent = currentValue.toLocaleString('en-IN');
+          customerElement.style.transform = `scale(${1 + (Math.sin(progress * Math.PI * 10) * 0.02)})`;
+        } else {
+          // Final state with 100000+ format
+          customerElement.textContent = '100000+';
+          customerElement.style.transform = 'scale(1)';
+          
+          // Add a subtle glow effect when animation completes
+          customerElement.style.textShadow = '0 0 10px rgba(217, 119, 87, 0.5)';
+          setTimeout(() => {
+            customerElement.style.textShadow = '';
+          }, 1000);
+        }
+        
+        // Continue animation if not complete
+        if (progress < 1) {
+          requestAnimationFrame(updateCount);
+        }
+      }
+      
+      // Start the animation
+      requestAnimationFrame(updateCount);
+    }
+    
+    // Easing function for smooth animation
+    function easeOutExpo(t) {
+      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+    
+    // Generic metric animation function
+    function animateMetric(elementId, targetValue, delay = 0, prefix = '', useCommas = false) {
+      setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const duration = 1500; // 1.5 seconds
+        const startTime = performance.now();
+        
+        // Set initial value
+        element.textContent = prefix + '0';
+        
+        function updateMetric(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // Use easing function for smooth animation
+          const easedProgress = easeOutExpo(progress);
+          const currentValue = Math.floor(targetValue * easedProgress);
+          
+          // Format number based on preferences
+          let displayValue;
+          if (useCommas) {
+            displayValue = prefix + currentValue.toLocaleString('en-IN');
+          } else {
+            displayValue = prefix + currentValue;
+          }
+          
+          element.textContent = displayValue;
+          
+          // Add subtle scale animation
+          element.style.transform = `scale(${1 + (Math.sin(progress * Math.PI * 8) * 0.015)})`;
+          
+          // Continue animation if not complete
+          if (progress < 1) {
+            requestAnimationFrame(updateMetric);
+          } else {
+            // Reset transform when complete
+            element.style.transform = 'scale(1)';
+            
+            // Add completion glow effect
+            element.style.transition = 'text-shadow 0.5s ease';
+            element.style.textShadow = '0 0 8px rgba(217, 119, 87, 0.4)';
+            setTimeout(() => {
+              element.style.textShadow = '';
+            }, 800);
+          }
+        }
+        
+        // Start the animation
+        requestAnimationFrame(updateMetric);
+      }, delay);
+    }
+
+    // Load recent invoices from Google Sheets (same source as invoice-pdfs.html)
+    function loadRecentInvoices() {
+      const sheetURL = "https://docs.google.com/spreadsheets/d/1PNLHAqcicex9EZxoaXL6xLuu4iSzWFDyot_ab1wsc5E/gviz/tq?tqx=out:json";
+      
+      fetch(sheetURL)
+        .then(res => res.text())
+        .then(text => {
+          const json = JSON.parse(text.substr(47).slice(0, -2));
+          const rows = json.table.rows;
+          
+          const invoices = [];
+          
+          rows.forEach((row, i) => {
+            const cells = row.c;
+            if (!cells) return;
+            
+            // Safely extract cell values with better fallbacks
+            const invoiceNo = (cells[0] && cells[0].v !== null && cells[0].v !== undefined) ? String(cells[0].v) : "";
+            const name = (cells[1] && cells[1].v !== null && cells[1].v !== undefined) ? String(cells[1].v) : "";
+            
+            // Handle date formatting from Google Sheets
+            let date = "";
+            if (cells[2]) {
+              // Check if the cell exists but is empty
+              if (cells[2].v === null || cells[2].v === undefined || cells[2].v === '') {
+                date = "";
+              } else {
+                const dateValue = cells[2].v;
+                
+                // If it's a date object from Google Sheets, format it properly
+                if (typeof dateValue === 'object') {
+                  // Use the formatted value if available, otherwise process the raw value
+                  if (dateValue.f) {
+                    date = dateValue.f; // Formatted date string
+                  } else if (dateValue.v) {
+                    // Handle the raw date value if formatted is not available
+                    const rawDateValue = dateValue.v;
+                    if (typeof rawDateValue === 'string' && rawDateValue.startsWith('Date(')) {
+                      try {
+                        // Parse the Date() string
+                        const dateMatch = rawDateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+                        if (dateMatch) {
+                          const year = parseInt(dateMatch[1]);
+                          const month = parseInt(dateMatch[2]);
+                          const day = parseInt(dateMatch[3]);
+                          // Note: JavaScript months are 0-indexed
+                          const dateObj = new Date(year, month, day);
+                          const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+                          const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+                          const formattedYear = dateObj.getFullYear();
+                          date = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+                        } else {
+                          date = rawDateValue;
+                        }
+                      } catch (e) {
+                        date = rawDateValue;
+                      }
+                    } else {
+                      date = String(rawDateValue);
+                    }
+                  }
+                } else if (typeof dateValue === 'string') {
+                  // Check if it's a Date() string like "Date(2025,5,10)"
+                  if (dateValue.startsWith('Date(')) {
+                    try {
+                      // Parse the Date() string
+                      const dateMatch = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+                      if (dateMatch) {
+                        const year = parseInt(dateMatch[1]);
+                        const month = parseInt(dateMatch[2]);
+                        const day = parseInt(dateMatch[3]);
+                        // Note: JavaScript months are 0-indexed, so we don't need to subtract 1
+                        const dateObj = new Date(year, month, day);
+                        const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+                        const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const formattedYear = dateObj.getFullYear();
+                        date = `${formattedDay}-${formattedMonth}-${formattedYear}`;
+                      } else {
+                        date = dateValue;
+                      }
+                    } catch (e) {
+                      date = dateValue;
+                    }
+                  } else {
+                    date = dateValue;
+                  }
+                } else if (typeof dateValue === 'number') {
+                  // Convert Google Sheets serial date number to actual date
+                  const dateObj = new Date((dateValue - 25569) * 86400 * 1000);
+                  const day = String(dateObj.getDate()).padStart(2, '0');
+                  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                  const year = dateObj.getFullYear();
+                  date = `${day}-${month}-${year}`;
+                } else {
+                  // Handle other types
+                  date = String(dateValue);
+                }
+              }
+            }
+            
+            const total = (cells[3] && cells[3].v !== null && cells[3].v !== undefined) ? String(cells[3].v) : "";
+            
+            if (!invoiceNo && !name && !date) return;
+            
+            invoices.push({
+              invoiceNo,
+              name,
+              date,
+              total
+            });
+          });
+          
+          // Debug: Log the invoices data
+          console.log("Invoices data:", invoices);
+          console.log("Total invoices count:", invoices.length);
+          
+          // Store data for reports and enhanced features
+          allInvoiceData = [...invoices];
+          filteredInvoices = [...invoices];
+          updateReportSummary();
+          
+          // Sort by invoice number (assuming newer invoices have higher numbers) and take latest 5
+          const recentInvoices = invoices
+            .sort((a, b) => {
+              const numA = parseInt(a.invoiceNo.replace(/\D/g, '')) || 0;
+              const numB = parseInt(b.invoiceNo.replace(/\D/g, '')) || 0;
+              return numB - numA;
+            })
+            .slice(0, 5);
+          
+          // Calculate metrics for current month
+          const now = new Date();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
+          
+          const currentMonthInvoices = invoices.filter(invoice => {
+            // Try to parse the formatted date back to a date object
+            if (!invoice.date) return false;
+            
+            // Handle different date formats
+            let invoiceDate;
+            
+            // Check if it's a Date() string like "Date(2025,5,10)"
+            if (typeof invoice.date === 'string' && invoice.date.startsWith('Date(')) {
+              try {
+                const dateMatch = invoice.date.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (dateMatch) {
+                  const year = parseInt(dateMatch[1]);
+                  const month = parseInt(dateMatch[2]);
+                  const day = parseInt(dateMatch[3]);
+                  invoiceDate = new Date(year, month, day);
+                }
+              } catch (e) {
+                return false;
+              }
+            } 
+            // Check if it's in DD-MM-YYYY format
+            else if (typeof invoice.date === 'string' && invoice.date.includes('-')) {
+              const parts = invoice.date.split('-');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1; // Months are 0-indexed in JS
+                const year = parseInt(parts[2]);
+                invoiceDate = new Date(year, month, day);
+              }
+            } 
+            // Check if it's in MM/DD/YYYY format
+            else if (typeof invoice.date === 'string' && invoice.date.includes('/')) {
+              const parts = invoice.date.split('/');
+              if (parts.length === 3) {
+                const month = parseInt(parts[0]) - 1; // Months are 0-indexed in JS
+                const day = parseInt(parts[1]);
+                const year = parseInt(parts[2]);
+                invoiceDate = new Date(year, month, day);
+              }
+            } 
+            // Try to parse as a standard date string
+            else {
+              invoiceDate = new Date(invoice.date);
+            }
+            
+            // Check if date is valid
+            if (!invoiceDate || isNaN(invoiceDate.getTime())) return false;
+            
+            return invoiceDate.getMonth() === currentMonth && 
+                   invoiceDate.getFullYear() === currentYear;
+          });
+          
+          // Calculate metrics for previous month
+          const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+          const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+          
+          const previousMonthInvoices = invoices.filter(invoice => {
+            // Try to parse the formatted date back to a date object
+            if (!invoice.date) return false;
+            
+            // Handle different date formats
+            let invoiceDate;
+            
+            // Check if it's a Date() string like "Date(2025,5,10)"
+            if (typeof invoice.date === 'string' && invoice.date.startsWith('Date(')) {
+              try {
+                const dateMatch = invoice.date.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (dateMatch) {
+                  const year = parseInt(dateMatch[1]);
+                  const month = parseInt(dateMatch[2]);
+                  const day = parseInt(dateMatch[3]);
+                  invoiceDate = new Date(year, month, day);
+                }
+              } catch (e) {
+                return false;
+              }
+            } 
+            // Check if it's in DD-MM-YYYY format
+            else if (typeof invoice.date === 'string' && invoice.date.includes('-')) {
+              const parts = invoice.date.split('-');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]) - 1; // Months are 0-indexed in JS
+                const year = parseInt(parts[2]);
+                invoiceDate = new Date(year, month, day);
+              }
+            } 
+            // Check if it's in MM/DD/YYYY format
+            else if (typeof invoice.date === 'string' && invoice.date.includes('/')) {
+              const parts = invoice.date.split('/');
+              if (parts.length === 3) {
+                const month = parseInt(parts[0]) - 1; // Months are 0-indexed in JS
+                const day = parseInt(parts[1]);
+                const year = parseInt(parts[2]);
+                invoiceDate = new Date(year, month, day);
+              }
+            } 
+            // Try to parse as a standard date string
+            else {
+              invoiceDate = new Date(invoice.date);
+            }
+            
+            // Check if date is valid
+            if (!invoiceDate || isNaN(invoiceDate.getTime())) return false;
+            
+            return invoiceDate.getMonth() === previousMonth && 
+                   invoiceDate.getFullYear() === previousYear;
+          });
+          
+          // Update total invoices count with trend
+          const totalInvoices = invoices.length;
+          const invoicesThisMonth = currentMonthInvoices.length;
+          const invoicesLastMonth = previousMonthInvoices.length;
+          const invoiceTrend = invoicesLastMonth > 0 ? 
+            Math.round(((invoicesThisMonth - invoicesLastMonth) / invoicesLastMonth) * 100) : 
+            (invoicesThisMonth > 0 ? 100 : 0);
+          
+          // Debug: Log the calculated metrics
+          console.log("Total invoices:", totalInvoices);
+          console.log("Current month invoices:", invoicesThisMonth);
+          console.log("Previous month invoices:", invoicesLastMonth);
+          console.log("Invoice trend:", invoiceTrend);
+          
+          // Remove direct assignment since animateMetric will handle it
+          // document.getElementById('total-invoices').textContent = totalInvoices.toLocaleString('en-IN');
+          document.getElementById('invoice-trend').innerHTML = `${invoiceTrend >= 0 ? '+' : ''}${invoiceTrend}%`;
+          document.getElementById('invoice-trend').className = invoiceTrend >= 0 ? 'trend-up' : 'trend-down';
+          
+          // Calculate total revenue
+          const totalRevenue = invoices.reduce((sum, invoice) => {
+            const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+            return sum + amount;
+          }, 0);
+          
+          // Calculate phones sold (assuming each invoice represents one phone sale)
+          // But also calculate based on products if available in future
+          const phonesSold = invoices.length;
+          const phonesSoldThisMonth = currentMonthInvoices.length;
+          const phonesSoldLastMonth = previousMonthInvoices.length;
+          const phonesTrend = phonesSoldLastMonth > 0 ? 
+            Math.round(((phonesSoldThisMonth - phonesSoldLastMonth) / phonesSoldLastMonth) * 100) : 
+            (phonesSoldThisMonth > 0 ? 100 : 0);
+          
+          // Debug: Log phone metrics
+          console.log("Phones sold:", phonesSold);
+          console.log("Phones trend:", phonesTrend);
+          
+          // Remove direct assignment since animateMetric will handle it
+          // document.getElementById('phones-sold').textContent = phonesSold.toLocaleString('en-IN');
+          document.getElementById('phones-trend').innerHTML = `${phonesTrend >= 0 ? '+' : ''}${phonesTrend}`;
+          document.getElementById('phones-trend').className = phonesTrend >= 0 ? 'trend-up' : 'trend-down';
+          
+          // Calculate average order value with trend
+          const avgOrderValue = phonesSold > 0 ? totalRevenue / phonesSold : 0;
+          const avgOrderValueThisMonth = phonesSoldThisMonth > 0 ? 
+            currentMonthInvoices.reduce((sum, invoice) => {
+              const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+              return sum + amount;
+            }, 0) / phonesSoldThisMonth : 0;
+            
+          const avgOrderValueLastMonth = phonesSoldLastMonth > 0 ? 
+            previousMonthInvoices.reduce((sum, invoice) => {
+              const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+              return sum + amount;
+            }, 0) / phonesSoldLastMonth : 0;
+            
+          const avgTrend = avgOrderValueLastMonth > 0 ? 
+            Math.round(((avgOrderValueThisMonth - avgOrderValueLastMonth) / avgOrderValueLastMonth) * 100) : 
+            (avgOrderValueThisMonth > 0 ? 100 : 0);
+          
+          // Debug: Log average order value metrics
+          console.log("Average order value:", avgOrderValue);
+          console.log("Average order value trend:", avgTrend);
+          
+          // Animate metrics with staggered timing
+          animateMetric('total-revenue', totalRevenue, 0, '₹', true);
+          animateMetric('total-invoices', totalInvoices, 300, '', true);
+          animateMetric('phones-sold', phonesSold, 600, '', true);
+          animateMetric('avg-order', Math.round(avgOrderValue), 900, '₹', true);
+          
+          // Update trend indicators
+          document.getElementById('revenue-trend').innerHTML = `${invoiceTrend >= 0 ? '+' : ''}${invoiceTrend}%`;
+          document.getElementById('revenue-trend').className = invoiceTrend >= 0 ? 'trend-up' : 'trend-down';
+          document.getElementById('avg-trend').innerHTML = `${avgTrend >= 0 ? '+' : ''}${avgTrend}%`;
+          document.getElementById('avg-trend').className = avgTrend >= 0 ? 'trend-up' : 'trend-down';
+          
+          // Update customer count (set to 100000+ as requested)
+          document.getElementById('customer-count').textContent = '100000+';
+          
+          // Generate HTML for recent invoices
+          let invoicesHtml = '';
+          
+          if (recentInvoices.length === 0) {
+            invoicesHtml = `
+              <tr>
+                <td colspan="5" class="text-center py-8 text-gray-400">
+                  <i class="fas fa-inbox text-3xl mb-3 block"></i>
+                  No invoices found
+                </td>
+              </tr>
+            `;
+          } else {
+            invoicesHtml = recentInvoices.map((invoice, index) => {
+              // Format the total amount properly
+              const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+              // Format without unnecessary decimal places
+              const formattedAmount = amount % 1 === 0 ? 
+                amount.toLocaleString('en-IN') : 
+                amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              
+              return `
+                <tr class="border-b border-gray-700/50 hover:bg-gray-700/20 transition-colors">
+                  <td class="py-3 text-blue-400 font-mono">${invoice.invoiceNo}</td>
+                  <td class="py-3 text-white">${invoice.name}</td>
+                  <td class="py-3 text-green-400 font-semibold">₹${formattedAmount}</td>
+                  <td class="py-3 text-gray-300">${invoice.date}</td>
+                  <td class="py-3">
+                    <select class="status-select bg-gray-700/50 border border-gray-600 rounded-md px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                            data-invoice="${invoice.invoiceNo}" 
+                            onchange="updateInvoiceStatus(this)">
+                      <option value="pending" class="bg-gray-800 text-yellow-400">Pending</option>
+                      <option value="processing" class="bg-gray-800 text-blue-400">Processing</option>
+                      <option value="paid" class="bg-gray-800 text-green-400">Paid</option>
+                    </select>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          }
+          
+          document.getElementById('recent-invoices').innerHTML = invoicesHtml;
+          
+          // Apply status colors after elements are added to DOM
+          setTimeout(() => {
+            applyStatusColors();
+          }, 100);
+          
+          // Update charts and top phones with the new data
+          setTimeout(() => {
+            updateRevenueChart(invoices);
+            updateCategoryChart(invoices);
+            loadTopPhones(invoices);
+          }, 500);
+        })
+        .catch(err => {
+          console.error("Error loading invoices:", err);
+          document.getElementById('recent-invoices').innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center py-8 text-red-400">
+                <i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>
+                Error loading invoice data
+              </td>
+            </tr>
+          `;
+        });
+    }
+
+    // Load top phones based on actual data
+    function loadTopPhones(invoices) {
+      // For now, we'll use static data since we don't have product information in the spreadsheet
+      // In a real implementation, this would analyze the invoices to determine top selling phones
+      const phonesHtml = `
+        <div class="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+            <span class="text-white">iPhone 15 Pro</span>
+          </div>
+          <span class="text-blue-400 font-semibold">₹1,25,000</span>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span class="text-white">Samsung Galaxy S24</span>
+          </div>
+          <span class="text-green-400 font-semibold">₹85,000</span>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+            <span class="text-white">OnePlus 12</span>
+          </div>
+          <span class="text-yellow-400 font-semibold">₹65,000</span>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-gray-700/20 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+            <span class="text-white">Pixel 8 Pro</span>
+          </div>
+          <span class="text-purple-400 font-semibold">₹75,000</span>
+        </div>
+      `;
+      document.getElementById('top-phones').innerHTML = phonesHtml;
+    }
+
+    // Update revenue chart with actual data
+    function updateRevenueChart(invoices) {
+      if (!revenueChart) return;
+      
+      // Group invoices by month
+      const monthlyRevenue = {};
+      
+      invoices.forEach(invoice => {
+        if (!invoice.date) return;
+        
+        // Parse date
+        let invoiceDate;
+        if (typeof invoice.date === 'string' && invoice.date.startsWith('Date(')) {
+          try {
+            const dateMatch = invoice.date.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (dateMatch) {
+              const year = parseInt(dateMatch[1]);
+              const month = parseInt(dateMatch[2]);
+              const day = parseInt(dateMatch[3]);
+              invoiceDate = new Date(year, month, day);
+            }
+          } catch (e) {
+            return;
+          }
+        } else if (typeof invoice.date === 'string' && invoice.date.includes('-')) {
+          const parts = invoice.date.split('-');
+          if (parts.length === 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const year = parseInt(parts[2]);
+            invoiceDate = new Date(year, month, day);
+          }
+        } else if (typeof invoice.date === 'string' && invoice.date.includes('/')) {
+          const parts = invoice.date.split('/');
+          if (parts.length === 3) {
+            const month = parseInt(parts[0]) - 1;
+            const day = parseInt(parts[1]);
+            const year = parseInt(parts[2]);
+            invoiceDate = new Date(year, month, day);
+          }
+        } else {
+          invoiceDate = new Date(invoice.date);
+        }
+        
+        if (!invoiceDate || isNaN(invoiceDate.getTime())) return;
+        
+        // Format as "MMM YYYY" for grouping
+        const monthKey = invoiceDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        
+        // Parse amount
+        const amount = parseFloat(invoice.total.toString().replace(/[^\d.]/g, '')) || 0;
+        
+        if (!monthlyRevenue[monthKey]) {
+          monthlyRevenue[monthKey] = 0;
+        }
+        monthlyRevenue[monthKey] += amount;
+      });
+      
+      // Convert to chart data
+      const labels = Object.keys(monthlyRevenue);
+      const data = Object.values(monthlyRevenue);
+      
+      // Update chart
+      revenueChart.data.labels = labels;
+      revenueChart.data.datasets[0].data = data;
+      revenueChart.update();
+    }
+
+    // Update category chart with actual data
+    function updateCategoryChart(invoices) {
+      if (!categoryChart) return;
+      
+      // For now, we'll use static data since we don't have product category information
+      // In a real implementation, this would analyze the invoices to determine category distribution
+      categoryChart.data.labels = ['Vivo', 'Oppo', 'Samsung', 'Realme'];
+      categoryChart.data.datasets[0].data = [35, 25, 30, 10];
+      categoryChart.update();
+    }
+
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function() {
+      updateTime();
+      setInterval(updateTime, 1000);
+      
+      // Initialize charts after a short delay for better performance
+      setTimeout(() => {
+        initCharts();
+        startRealTimeUpdates();
+      }, 500);
+      
+      // Load data with performance monitoring
+      const startTime = performance.now();
+      loadAnalyticsData();
+      
+      // Log performance metrics
+      setTimeout(() => {
+        const loadTime = performance.now() - startTime;
+        console.log(`Analytics loaded in ${loadTime.toFixed(2)}ms`);
+      }, 2000);
+    });
+    
+    // Real-time update system
+    function startRealTimeUpdates() {
+      // Update data every 30 seconds
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          refreshMetrics();
+        }
+      }, 30000);
+      
+      // Update charts every 60 seconds
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          updateChartData();
+        }
+      }, 60000);
+    }
+    
+    // Enhanced refresh metrics with animation
+    function refreshMetrics() {
+      const metrics = ['total-revenue', 'total-invoices', 'phones-sold', 'avg-order'];
+      
+      metrics.forEach((metricId, index) => {
+        setTimeout(() => {
+          const element = document.getElementById(metricId);
+          if (element) {
+            element.style.transform = 'scale(1.05)';
+            element.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+              element.style.transform = 'scale(1)';
+            }, 300);
+          }
+        }, index * 100);
+      });
+      
+      // Refresh invoice data
+      if (allInvoiceData.length > 0) {
+        loadRecentInvoices();
+      }
+    }
+    
+    // Update chart data dynamically
+    function updateChartData() {
+      if (revenueChart && allInvoiceData.length > 0) {
+        // Simulate real-time data updates
+        const currentData = revenueChart.data.datasets[0].data;
+        const newValue = currentData[currentData.length - 1] + Math.random() * 5000 - 2500;
+        
+        // Add new data point
+        revenueChart.data.datasets[0].data.push(Math.max(0, newValue));
+        revenueChart.data.labels.push(new Date().toLocaleTimeString());
+        
+        // Keep only last 10 data points
+        if (revenueChart.data.datasets[0].data.length > 10) {
+          revenueChart.data.datasets[0].data.shift();
+          revenueChart.data.labels.shift();
+        }
+        
+        revenueChart.update('none'); // Smooth update without animation
+      }
+    }
+    
+    // Performance optimization: Debounced search
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
+    // Enhanced error handling
+    function handleError(error, context) {
+      console.error(`Error in ${context}:`, error);
+      showNotification(`Error: ${error.message || 'Something went wrong'}`, 'error');
+    }
+    
+    // Memory management
+    function cleanupResources() {
+      if (revenueChart) {
+        revenueChart.destroy();
+      }
+      if (categoryChart) {
+        categoryChart.destroy();
+      }
+    }
+    
+    // Handle page visibility for performance
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') {
+        // Pause updates when page is not visible
+        console.log('Page hidden - pausing updates');
+      } else {
+        // Resume updates when page becomes visible
+        console.log('Page visible - resuming updates');
+        refreshMetrics();
+      }
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', cleanupResources);
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html>

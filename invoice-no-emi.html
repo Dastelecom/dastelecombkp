@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Dastelecom Invoice Generator - No EMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    body {
+      background: #000000;
+      min-height: 100vh;
+      color: #ffffff;
+    }
+
+    /* Background grid styling */
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    /* Content wrapper */
+    .content-wrapper {
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+      padding: 2rem 1rem;
+    }
+
+    /* Glass card effect */
+    .glass-card {
+      background: rgba(0, 9, 29, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.37),
+        inset 0 0 32px 0 rgba(255, 255, 255, 0.02),
+        0 0 4px 0 rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.37),
+        inset 0 0 32px 0 rgba(255, 255, 255, 0.03),
+        0 0 8px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* Glow text effect */
+    .glow-text {
+      color: #ffffff;
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Input fields */
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"] {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(12px);
+      padding: 0.875rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.025em;
+      box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 0 8px rgba(255, 255, 255, 0.05);
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+
+    input[type="text"]:hover,
+    input[type="tel"]:hover,
+    input[type="number"]:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        inset 0 0 10px rgba(255, 255, 255, 0.1),
+        0 0 15px rgba(255, 255, 255, 0.2);
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 0 0 2px rgba(255, 255, 255, 0.2),
+        inset 0 0 12px rgba(255, 255, 255, 0.1),
+        0 0 20px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Remove arrows from number inputs */
+    input[type="number"]::-webkit-inner-spin-button, 
+    input[type="number"]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* Price field styling */
+    .price-field {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 1) !important;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        inset 0 0 10px rgba(255, 255, 255, 0.1),
+        0 0 15px rgba(255, 255, 255, 0.2) !important;
+      transition: all 0.3s ease;
+    }
+    
+    .price-field:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.7),
+        0 0 20px rgba(255, 255, 255, 0.5),
+        0 0 30px rgba(255, 255, 255, 0.3);
+      box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(255, 255, 255, 0.3),
+        inset 0 0 15px rgba(255, 255, 255, 0.2),
+        0 0 20px rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Select styling */
+    .custom-select {
+      position: relative;
+      display: block;
+    }
+    
+    .custom-select select {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 0.875rem 2.5rem 0.875rem 1rem;
+      border-radius: 0.75rem;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      width: 100%;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 3px rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .custom-select::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+    
+    .custom-select:hover::after {
+      border-top-color: rgba(217, 119, 87, 0.9);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .custom-select select:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+      border-color: rgba(217, 119, 87, 0.4);
+      box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.15),
+        0 0 0 2px rgba(217, 119, 87, 0.2),
+        inset 0 1px 3px rgba(255, 255, 255, 0.15),
+        0 0 20px rgba(217, 119, 87, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .custom-select select:focus {
+      outline: none;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+      border-color: rgba(217, 119, 87, 0.6);
+      box-shadow: 
+        0 12px 35px rgba(0, 0, 0, 0.2),
+        0 0 0 3px rgba(217, 119, 87, 0.3),
+        inset 0 1px 3px rgba(255, 255, 255, 0.2),
+        0 0 30px rgba(217, 119, 87, 0.2);
+      transform: translateY(-2px);
+      color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .custom-select select:focus + .custom-select::after {
+      border-top-color: rgba(217, 119, 87, 1);
+      transform: translateY(-50%) scale(1.2);
+    }
+    
+    .custom-select select:disabled {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.3);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .custom-select select:disabled + .custom-select::after {
+      border-top-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Option styling */
+    .custom-select select option {
+      background: rgba(15, 23, 42, 0.95);
+      color: #ffffff;
+      padding: 0.5rem;
+      border: none;
+      font-weight: 500;
+    }
+    
+    .custom-select select option:hover {
+      background: rgba(217, 119, 87, 0.2);
+      color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .custom-select select option:checked {
+      background: rgba(217, 119, 87, 0.3);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    /* Enhanced animation for select focus */
+    @keyframes selectGlow {
+      0% {
+        box-shadow: 
+          0 4px 15px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+      }
+      50% {
+        box-shadow: 
+          0 8px 25px rgba(217, 119, 87, 0.2),
+          0 0 0 2px rgba(217, 119, 87, 0.4),
+          0 0 20px rgba(217, 119, 87, 0.1);
+      }
+      100% {
+        box-shadow: 
+          0 4px 15px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    /* Submit button styling */
+    .submit-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Glowing button effect */
+    .glow-btn {
+      border: none;
+      outline: none;
+      color: #FFF;
+      cursor: pointer;
+      position: relative;
+      z-index: 0;
+      border-radius: 12px;
+    }
+    
+    .glow-btn::after {
+      content: "";
+      z-index: -1;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: #333;
+      left: 0;
+      top: 0;
+      border-radius: 10px;
+    }
+    
+    .glow-btn::before {
+      content: "";
+      background: linear-gradient(
+        45deg,
+        #FF0000, #FF7300, #FFFB00, #48FF00,
+        #00FFD5, #002BFF, #FF00C8, #FF0000
+      );
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      background-size: 600%;
+      z-index: -1;
+      width: calc(100% + 4px);
+      height: calc(100% + 4px);
+      filter: blur(8px);
+      animation: glowing 20s linear infinite;
+      transition: opacity .3s ease-in-out;
+      border-radius: 10px;
+      opacity: 0;
+    }
+    
+    @keyframes glowing {
+      0% {background-position: 0 0;}
+      50% {background-position: 400% 0;}
+      100% {background-position: 0 0;}
+    }
+    
+    .glow-btn:hover::before {
+      opacity: 1;
+    }
+    
+    .glow-btn:active:after {
+      background: transparent;
+    }
+    
+    .glow-btn:active {
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* Success message styling */
+    .success-msg {
+      background: rgba(34, 197, 94, 0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.2),
+        inset 0 0 32px 0 rgba(34, 197, 94, 0.05);
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed background with dotted grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Content wrapper -->
+  <div class="content-wrapper">
+    <!-- Header -->
+    <div class="bg-[#00091d] text-white flex items-center justify-center px-4 h-16 relative z-30 border-b border-white/10">
+      <h1 class="text-xl font-semibold glow-text">Dastelecom Invoice Generator</h1>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex items-center justify-center p-6">
+      <div class="glass-card p-8 rounded-2xl w-full max-w-md relative z-20">
+        <h2 class="text-2xl font-bold glow-text mb-6 text-center">Generate Invoice</h2>
+
+        <form id="invoiceForm" class="space-y-4">
+          <!-- Customer Details -->
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-sky-400 mb-4">Customer Details</h3>
+
+            <div>
+              <label class="block font-medium text-gray-300">Customer Name</label>
+              <input
+                id="customerName"
+                type="text"
+                placeholder="Enter name"
+                class="w-full"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">Customer Address</label>
+              <input
+                id="customerAddress"
+                type="text"
+                placeholder="Enter address"
+                class="w-full"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">Customer Phone Number</label>
+              <input
+                id="customerPhone"
+                type="tel"
+                placeholder="Enter phone number"
+                class="w-full"
+                required
+                pattern="^\d{10,15}$"
+                title="Enter 10 to 15 digit phone number"
+              />
+            </div>
+          </div>
+
+          <!-- Product Details -->
+          <div class="space-y-4 mt-8">
+            <h3 class="text-xl font-semibold text-sky-400 mb-4">Product Details</h3>
+
+            <div>
+              <label class="block font-medium text-gray-300">Mobile Brand Name</label>
+              <div class="custom-select">
+                <select id="mobileBrand" class="w-full" required>
+                  <option disabled selected>Select Mobile Brand</option>
+                  <!-- Brands will be loaded from Firebase -->
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">Mobile Model</label>
+              <div class="custom-select">
+                <select id="mobileModel" class="w-full" disabled required>
+                  <option disabled selected>Select Mobile Model</option>
+                  <!-- Models will be loaded based on selected brand -->
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">RAM + ROM</label>
+              <div class="custom-select">
+                <select id="ramRomSelect" class="w-full" disabled required>
+                  <option disabled selected>Select Variant</option>
+                  <!-- RAM+ROM options will be loaded based on selected model -->
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">Color</label>
+              <div class="custom-select">
+                <select id="colorSelect" class="w-full" disabled required>
+                  <option disabled selected>Select Color</option>
+                  <!-- Colors will be loaded based on selected model -->
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-medium text-white glow-text">Price (₹)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-3 text-white font-semibold">₹</span>
+                <input
+                  id="priceInput"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Enter price with GST"
+                  class="w-full pl-8 price-field"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-medium text-white glow-text">Price without GST (₹)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-3 text-white font-semibold">₹</span>
+                <input
+                  id="priceNoGstInput"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Auto-calculated (without 18% GST)"
+                  class="w-full pl-8 price-field"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- IMEI Details -->
+          <div class="space-y-4 mt-8">
+            <h3 class="text-xl font-semibold text-sky-400 mb-4">IMEI Details</h3>
+
+            <div>
+              <label class="block font-medium text-gray-300">IMEI Number 1</label>
+              <input
+                id="imei1"
+                type="text"
+                maxlength="15"
+                placeholder="Enter 15-digit IMEI Number 1"
+                class="w-full"
+                inputmode="numeric"
+                pattern="^\d{15}$"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block font-medium text-gray-300">IMEI Number 2</label>
+              <input
+                id="imei2"
+                type="text"
+                maxlength="15"
+                placeholder="Last 2 digits editable only"
+                class="w-full bg-slate-800/50"
+                inputmode="numeric"
+                pattern="^\d{15}$"
+                disabled
+                required
+              />
+              <p class="text-sm text-gray-400 mt-1">First 13 digits auto-filled, last 2 digits editable</p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="w-full mt-8 glow-btn submit-btn text-white font-semibold py-3 px-6 rounded-lg"
+          >
+            Submit
+          </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMsg" class="hidden mt-4 success-msg rounded-lg p-4 flex items-center space-x-2 font-semibold text-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="3"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Successfully Generated Invoice!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM elements
+    const invoiceForm = document.getElementById('invoiceForm');
+    const customerName = document.getElementById('customerName');
+    const customerAddress = document.getElementById('customerAddress');
+    const customerPhone = document.getElementById('customerPhone');
+    const mobileBrand = document.getElementById('mobileBrand');
+    const mobileModel = document.getElementById('mobileModel');
+    const ramRomSelect = document.getElementById('ramRomSelect');
+    const colorSelect = document.getElementById('colorSelect');
+    const priceInput = document.getElementById('priceInput');
+    const priceNoGstInput = document.getElementById('priceNoGstInput');
+    const imei1 = document.getElementById('imei1');
+    const imei2 = document.getElementById('imei2');
+    const successMsg = document.getElementById('successMsg');
+    
+    // Store all products data
+    let productsData = {};
+    
+    // Load products from Firebase when the page loads
+    document.addEventListener('DOMContentLoaded', loadProducts);
+    
+    // Load products from Firebase and populate the brand dropdown
+    function loadProducts() {
+      fetch('https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app/products.json')
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          if (!data) {
+            console.log('No products found in the database');
+            alert('No products found. Please add products first.');
+            return;
+          }
+          
+          console.log('Raw products data from Firebase:', data);
+          productsData = data;
+          
+          // Extract unique brands
+          const brands = new Set();
+          Object.entries(productsData).forEach(([key, product]) => {
+            if (product?.brand) brands.add(product.brand);
+          });
+          
+          console.log('Unique brands found:', Array.from(brands));
+          
+          // Populate brand dropdown
+          mobileBrand.innerHTML = '<option disabled selected>Select Mobile Brand</option>';
+          Array.from(brands).sort().forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            mobileBrand.appendChild(option);
+          });
+          
+          mobileBrand.disabled = false;
+        })
+        .catch(error => {
+          console.error('Error loading products:', error);
+          alert('Failed to load products from database: ' + error.message);
+        });
+    }
+    
+    // Event listener for brand selection
+    mobileBrand.addEventListener('change', () => {
+      const selectedBrand = mobileBrand.value;
+      console.log("Brand selected:", selectedBrand);
+      
+      // Reset other dropdowns
+      mobileModel.innerHTML = '<option disabled selected>Select Mobile Model</option>';
+      ramRomSelect.innerHTML = '<option disabled selected>Select Variant</option>';
+      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
+      
+      // Enable model selection, disable others
+      mobileModel.disabled = false;
+      ramRomSelect.disabled = true;
+      colorSelect.disabled = true;
+      
+      // Reset price fields
+      priceInput.value = "";
+      priceNoGstInput.value = "";
+      
+      populateModelDropdown(selectedBrand);
+    });
+    
+    // Function to populate model dropdown
+    function populateModelDropdown(selectedBrand) {
+      const models = new Set();
+      
+      Object.entries(productsData).forEach(([key, product]) => {
+        if (product?.brand === selectedBrand && product?.model) {
+          let baseModel = product.model;
+          baseModel = baseModel.replace(/\d+\+\d+GB/g, '').trim();
+          if (product.color && Array.isArray(product.color)) {
+            product.color.forEach(color => {
+              baseModel = baseModel.replace(new RegExp(color + '$'), '').trim();
+            });
+          }
+          models.add(baseModel);
+        }
+      });
+      
+      console.log('Unique models found for', selectedBrand + ':', Array.from(models));
+      
+      mobileModel.innerHTML = '<option disabled selected>Select Mobile Model</option>';
+      Array.from(models).sort().forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        mobileModel.appendChild(option);
+      });
+    }
+    
+    // Event listener for model selection
+    mobileModel.addEventListener('change', () => {
+      const selectedBrand = mobileBrand.value;
+      const selectedModel = mobileModel.value;
+      
+      // Reset color dropdown
+      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
+      
+      // Enable RAM+ROM selection, disable color
+      ramRomSelect.disabled = false;
+      colorSelect.disabled = true;
+      
+      // Reset price fields
+      priceInput.value = "";
+      priceNoGstInput.value = "";
+      
+      populateRamRomDropdown(selectedBrand, selectedModel);
+    });
+    
+    // Function to populate RAM+ROM dropdown
+    function populateRamRomDropdown(selectedBrand, selectedModel) {
+      const variants = new Set();
+      
+      Object.entries(productsData).forEach(([key, product]) => {
+        if (product?.brand === selectedBrand && 
+            product?.model && 
+            product.model.startsWith(selectedModel) &&
+            product?.ramrom) {
+          product.ramrom.forEach(variant => variants.add(variant));
+        }
+      });
+      
+      console.log('RAM+ROM variants found for', selectedModel + ':', Array.from(variants));
+      
+      ramRomSelect.innerHTML = '<option disabled selected>Select Variant</option>';
+      Array.from(variants).sort((a, b) => {
+        const getNumbers = str => str.match(/\d+/g).map(Number);
+        const [aRam, aRom] = getNumbers(a);
+        const [bRam, bRom] = getNumbers(b);
+        return aRam !== bRam ? aRam - bRam : aRom - bRom;
+      }).forEach(variant => {
+        const option = document.createElement('option');
+        option.value = variant;
+        option.textContent = variant;
+        ramRomSelect.appendChild(option);
+      });
+    }
+    
+    // Event listener for RAM+ROM selection
+    ramRomSelect.addEventListener('change', () => {
+      const selectedBrand = mobileBrand.value;
+      const selectedModel = mobileModel.value;
+      
+      // Enable color selection
+      colorSelect.disabled = false;
+      
+      populateColorDropdown(selectedBrand, selectedModel);
+    });
+    
+    // Function to populate color dropdown
+    function populateColorDropdown(selectedBrand, selectedModel) {
+      const colors = new Set();
+      const selectedRamRom = ramRomSelect.value;
+      
+      Object.entries(productsData).forEach(([key, product]) => {
+        if (product?.brand === selectedBrand && 
+            product?.model && 
+            product.model.startsWith(selectedModel) &&
+            product?.ramrom && 
+            product.ramrom.includes(selectedRamRom) &&
+            product?.color) {
+          product.color.forEach(color => colors.add(color));
+        }
+      });
+      
+      console.log('Colors found for', selectedModel, selectedRamRom + ':', Array.from(colors));
+      
+      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
+      Array.from(colors).sort().forEach(color => {
+        const option = document.createElement('option');
+        option.value = color;
+        option.textContent = color;
+        colorSelect.appendChild(option);
+      });
+    }
+    
+    // Event listener for price input
+    priceInput.addEventListener('input', () => {
+      if (!priceInput.value) {
+        priceNoGstInput.value = "";
+        return;
+      }
+      
+      const priceWithGST = parseFloat(priceInput.value);
+      const priceWithoutGST = (priceWithGST / 1.18).toFixed(2);
+      priceNoGstInput.value = priceWithoutGST;
+    });
+
+    // IMEI validation and locking first 13 digits in IMEI2
+    imei1.addEventListener("input", () => {
+      imei1.value = imei1.value.replace(/\D/g, "").slice(0, 15);
+      if (imei1.value.length === 15) {
+        imei2.disabled = false;
+        imei2.classList.remove("bg-gray-100");
+        imei2.required = true;
+        imei2.value = imei1.value.slice(0, 13);
+        imei2.setSelectionRange(13, 15);
+      } else {
+        imei2.disabled = true;
+        imei2.value = "";
+        imei2.classList.add("bg-gray-100");
+        imei2.required = false;
+      }
+    });
+
+    imei2.addEventListener("keydown", (e) => {
+      const allowedKeys = ["ArrowLeft", "ArrowRight", "Backspace", "Delete", "Tab", "Home", "End"];
+      if (allowedKeys.includes(e.key)) return;
+
+      const pos = imei2.selectionStart;
+      if (pos < 13) {
+        e.preventDefault();
+        imei2.setSelectionRange(13, 15);
+        return;
+      }
+
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+        return;
+      }
+
+      if (imei2.value.length >= 15 && imei2.selectionStart === imei2.selectionEnd) {
+        e.preventDefault();
+      }
+    });
+
+    imei2.addEventListener("input", () => {
+      const fixedPart = imei1.value.slice(0, 13);
+      let editablePart = imei2.value.slice(13).replace(/\D/g, "").slice(0, 2);
+      imei2.value = fixedPart + editablePart;
+      imei2.setSelectionRange(imei2.value.length, imei2.value.length);
+    });
+
+    // Form submission
+    invoiceForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Validate IMEI numbers
+      if (imei1.value.length !== 15) {
+        alert("IMEI Number 1 must be exactly 15 digits");
+        imei1.focus();
+        return;
+      }
+      if (imei2.value.length !== 15) {
+        alert("IMEI Number 2 must be exactly 15 digits");
+        imei2.focus();
+        return;
+      }
+
+      // Prepare data for Firebase
+      const data = {
+        name: customerName.value,
+        address: customerAddress.value,
+        phone: customerPhone.value,
+        brand: mobileBrand.value,
+        model: mobileModel.value + " " + ramRomSelect.value + " " + colorSelect.value,
+        price_without_gst: priceNoGstInput.value,
+        imei1: imei1.value,
+        imei2: imei2.value,
+        timestamp: Date.now()
+      };
+
+      // Save to Firebase
+      const database = firebase.database();
+      const inputRef = database.ref("input");
+      
+      inputRef.set(data)
+        .then(() => {
+          successMsg.classList.remove("hidden");
+          setTimeout(() => {
+            window.location.href = "main.html";
+          }, 2000);
+        })
+        .catch((error) => {
+          alert("Error generating invoice: " + error.message);
+        });
+    });
+  </script>
+
+  <!-- Voice Command Indicator -->
+  <div id="voiceIndicator" class="fixed bottom-4 right-4 z-50 hidden">
+    <div class="p-3 rounded-full bg-orange-500 animate-pulse">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2A3 3 0 0 0 9 5V11A3 3 0 0 0 15 11V5A3 3 0 0 0 12 2M19 11C19 14.53 16.39 17.44 13 17.93V21H11V17.93C7.61 17.44 5 14.53 5 11H7A5 5 0 0 1 12 16A5 5 0 0 1 17 11Z" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    // Set current year automatically
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Voice command functionality for invoice form
+    document.addEventListener('DOMContentLoaded', function() {
+      let recognition;
+      let isListening = false;
+      const voiceIndicator = document.getElementById('voiceIndicator');
+
+      // Check if browser supports speech recognition
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        // Initialize speech recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;  // Always listening
+        recognition.lang = 'en-US'; // Default language
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 3; // Increase alternatives for better accuracy
+
+        recognition.onstart = function() {
+          isListening = true;
+          console.log('Voice recognition started for invoice form...');
+          voiceIndicator.classList.remove('hidden');
+        };
+
+        recognition.onresult = function(event) {
+          // Process all results
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              const transcript = event.results[i][0].transcript.toLowerCase().trim();
+              console.log('Voice command received for invoice form:', transcript);
+              
+              // Check for form submission commands
+              const submitCommands = [
+                'submit',
+                'submit form',
+                'generate invoice',
+                'create invoice',
+                'save invoice'
+              ];
+              
+              // Check for navigation commands
+              const backCommands = [
+                'back',
+                'go back',
+                'return',
+                'main menu',
+                'dashboard'
+              ];
+              
+              let commandRecognized = false;
+              
+              // Check for submit commands
+              for (const command of submitCommands) {
+                if (transcript.includes(command)) {
+                  commandRecognized = true;
+                  console.log('Recognized submit command:', command);
+                  // Trigger form submission
+                  document.getElementById('invoiceForm').dispatchEvent(new Event('submit'));
+                  break;
+                }
+              }
+              
+              // Check for back commands if submit not recognized
+              if (!commandRecognized) {
+                for (const command of backCommands) {
+                  if (transcript.includes(command)) {
+                    commandRecognized = true;
+                    console.log('Recognized back command:', command);
+                    // Go back to main dashboard
+                    window.location.href = 'main.html';
+                    break;
+                  }
+                }
+              }
+              
+              if (!commandRecognized) {
+                console.log('Form command not recognized. Try saying "submit" or "back"');
+              }
+            }
+          }
+        };
+
+        recognition.onerror = function(event) {
+          isListening = false;
+          console.error('Speech recognition error:', event.error);
+          voiceIndicator.classList.add('hidden');
+          
+          // Try switching to Bengali language if English fails
+          if (recognition.lang === 'en-US') {
+            recognition.lang = 'bn-IN';
+            console.log('Switching to Bengali language recognition');
+          } else {
+            recognition.lang = 'en-US'; // Switch back to English
+            console.log('Switching back to English language recognition');
+          }
+          
+          // Restart recognition after error
+          setTimeout(() => {
+            if (!isListening) {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.error('Error restarting recognition:', e);
+              }
+            }
+          }, 3000);
+        };
+
+        recognition.onend = function() {
+          isListening = false;
+          console.log('Speech recognition ended');
+          voiceIndicator.classList.add('hidden');
+          
+          // Restart recognition when it stops
+          setTimeout(() => {
+            if (!isListening) {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.error('Error restarting recognition:', e);
+              }
+            }
+          }, 1500);
+        };
+
+        // Start recognition automatically when page loads
+        // But with a delay to ensure page is fully loaded
+        setTimeout(() => {
+          try {
+            recognition.start();
+            console.log('Voice recognition initialized for invoice form with language:', recognition.lang);
+            
+            // Announce to user what to say
+            console.log('Say "submit" to generate invoice or "back" to return to dashboard');
+          } catch (error) {
+            console.error('Error starting voice recognition:', error);
+            voiceIndicator.classList.add('hidden');
+          }
+        }, 2000);
+      } else {
+        console.log('Speech recognition not supported in this browser');
+      }
+    });
+  </script>
+
+  <!-- Footer -->
+  <footer class="w-full mt-8 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+    <div class="text-center py-4">
+      <p class="text-gray-400">
+        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Set current year automatically
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html> 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.php">
+  <meta name="theme-color" content="#ffffff">
+  <title>Firebase Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #result {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Firebase Data Test</h1>
+  <button id="testButton">Test Firebase Connection</button>
+  <div id="result">Results will appear here...</div>
+
+  <script>
+    document.getElementById('testButton').addEventListener('click', function() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Connecting to Firebase...';
+      
+      // Using fetch to get data from Firebase
+      fetch('https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app/products.json')
+        .then(response => {
+          resultDiv.innerHTML += '<br>Response received. Status: ' + response.status;
+          if (!response.ok) {
+            throw new Error('Network response was not ok. Status: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          resultDiv.innerHTML += '<br>Data received!';
+          
+          if (!data) {
+            resultDiv.innerHTML += '<br>No data found in the database.';
+            return;
+          }
+          
+          // Display the data
+          resultDiv.innerHTML += '<br><br><strong>Raw data:</strong><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+          
+          // Count products
+          const productCount = Object.keys(data).length;
+          resultDiv.innerHTML += '<br><strong>Number of products:</strong> ' + productCount;
+          
+          // Extract brands
+          const brands = new Set();
+          Object.values(data).forEach(product => {
+            if (product && product.brand) {
+              brands.add(product.brand);
+            }
+          });
+          
+          resultDiv.innerHTML += '<br><strong>Brands found:</strong> ' + Array.from(brands).join(', ');
+          
+          // Check first product structure
+          if (productCount > 0) {
+            const firstProductKey = Object.keys(data)[0];
+            const firstProduct = data[firstProductKey];
+            resultDiv.innerHTML += '<br><br><strong>First product (key: ' + firstProductKey + '):</strong><pre>' + 
+                                  JSON.stringify(firstProduct, null, 2) + '</pre>';
+          }
+        })
+        .catch(error => {
+          resultDiv.innerHTML += '<br><strong>Error:</strong> ' + error.message;
+          console.error('Error:', error);
+        });
+    });
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch((err) => console.log('Service Worker registration failed:', err));
+  }
+</script>
+</body>
+</html> 
