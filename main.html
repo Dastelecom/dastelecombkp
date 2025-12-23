@@ -371,6 +371,7 @@
           // Process all results including interim results
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript.toLowerCase().trim();
+            const rawTranscript = event.results[i][0].transcript;
             console.log('Voice command received:', transcript, 'isFinal:', event.results[i].isFinal);
             
             // Display recognized text for debugging
@@ -378,6 +379,8 @@
             
             // Main step - listening for "open invoice"
             if (currentStep === 'main') {
+              let destination = null;
+              let sayText = null;
               // Check for English phrases
               const openInvoicePhrases = [
                 'open invoice',
@@ -398,72 +401,104 @@
               for (const phrase of openInvoicePhrases) {
                 if (transcript.includes(phrase)) {
                   commandRecognized = true;
+                  destination = 'select-invoice.html';
+                  sayText = 'Opening invoice';
                   console.log('Recognized command phrase:', phrase);
                   break;
                 }
               }
-              
+              // Additional English intents
+              if (!commandRecognized) {
+                if (transcript.includes('add products') || transcript.includes('add product')) {
+                  commandRecognized = true;
+                  destination = 'add-products.html';
+                  sayText = 'Opening add products';
+                } else if (transcript.includes('product list') || transcript.includes('products list')) {
+                  commandRecognized = true;
+                  destination = 'product-list.html';
+                  sayText = 'Opening products list';
+                } else if (transcript.includes('invoice software') || transcript.includes('download software') || transcript.includes('software')) {
+                  commandRecognized = true;
+                  destination = 'download-software.html';
+                  sayText = 'Opening invoice software';
+                } else if (transcript.includes('invoice pdf') || transcript.includes('invoice pdfs') || transcript.includes('pdf')) {
+                  commandRecognized = true;
+                  destination = 'invoice-pdfs.html';
+                  sayText = 'Opening invoice PDFs';
+                } else if (transcript.includes('analytics') || transcript.includes('analysis')) {
+                  commandRecognized = true;
+                  destination = 'analysis.html';
+                  sayText = 'Opening analytics';
+                } else if (transcript.includes('emi management') || transcript.includes('emi')) {
+                  commandRecognized = true;
+                  destination = 'emi-management.html';
+                  sayText = 'Opening EMI management';
+                } else if (transcript.includes('security code') || transcript.includes('security')) {
+                  commandRecognized = true;
+                  destination = 'security-code.html';
+                  sayText = 'Opening security code';
+                }
+              }
               // Check Bengali phrase (keep original case for Unicode text)
               if (!commandRecognized && (event.results[i][0].transcript.includes(bengaliPhrase) || event.results[i][0].transcript.includes('নতুন ইনভয়েস') || event.results[i][0].transcript.includes('নতুন ইনভয়েস'))) {
                 commandRecognized = true;
                 bnMatch = true;
+                destination = 'select-invoice.html';
+                sayText = 'ওপেন করছি ইনভয়েস';
                 console.log('Recognized Bengali command phrase:', bengaliPhrase);
               }
-              
+              // Additional Bengali intents
+              if (!commandRecognized) {
+                if (rawTranscript.includes('প্রোডাক্ট') || rawTranscript.includes('পণ্য')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'add-products.html';
+                  sayText = 'প্রোডাক্ট যোগ পৃষ্ঠা খুলছি';
+                } else if (rawTranscript.includes('তালিকা') || rawTranscript.includes('লিস্ট')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'product-list.html';
+                  sayText = 'প্রোডাক্ট তালিকা খুলছি';
+                } else if (rawTranscript.includes('সফটওয়্যার') || rawTranscript.includes('ডাউনলোড')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'download-software.html';
+                  sayText = 'সফটওয়্যার পৃষ্ঠা খুলছি';
+                } else if (rawTranscript.includes('পিডিএফ')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'invoice-pdfs.html';
+                  sayText = 'ইনভয়েস পিডিএফ খুলছি';
+                } else if (rawTranscript.includes('বিশ্লেষণ')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'analysis.html';
+                  sayText = 'অ্যানালিটিক্স খুলছি';
+                } else if (rawTranscript.includes('ই এম আই') || rawTranscript.includes('ইএমআই')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'emi-management.html';
+                  sayText = 'ই এম আই ম্যানেজমেন্ট খুলছি';
+                } else if (rawTranscript.includes('সিকিউরিটি')) {
+                  commandRecognized = true; bnMatch = true;
+                  destination = 'security-code.html';
+                  sayText = 'সিকিউরিটি কোড খুলছি';
+                }
+              }
               // Only act on final results to prevent premature navigation
               if (commandRecognized && event.results[i].isFinal) {
-                console.log('Redirecting to select-invoice.html');
+                console.log('Redirecting to', destination || 'select-invoice.html');
                 // Add visual feedback
                 micIcon.style.filter = 'drop-shadow(0 0 12px rgba(0, 255, 0, 0.8))';
                 
-                // Speak the prompt before redirecting
+                // Speak a short "Opening ..." then redirect
                 if ('speechSynthesis' in window) {
-                  const useBn = bnMatch;
-                  const defaultText = useBn ? 'কোন ইনভয়েস ক্যাশ নাকি ই এম আই' : 'Which invoice cash or emi';
-                  try {
-                    fetch('jarvis-gemini.php', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ transcript: event.results[i][0].transcript, language: useBn ? 'bn' : 'en' })
-                    }).then(async (resp) => {
-                      let text = defaultText;
-                      if (resp.ok) {
-                        try { const data = await resp.json(); if (data && data.speech) { text = data.speech; } } catch (e) {}
-                      }
-                      const utterance = new SpeechSynthesisUtterance(text);
-                      utterance.lang = useBn ? 'bn-IN' : 'en-US';
-                      utterance.rate = 1.0;
-                      utterance.pitch = 1.0;
-                      speechSynthesis.speak(utterance);
-                      // Redirect after a short delay to allow the speech to play
-                      setTimeout(() => {
-                        window.location.href = 'select-invoice.html';
-                      }, 1500);
-                    }).catch(() => {
-                      const utterance = new SpeechSynthesisUtterance(defaultText);
-                      utterance.lang = useBn ? 'bn-IN' : 'en-US';
-                      utterance.rate = 1.0;
-                      utterance.pitch = 1.0;
-                      speechSynthesis.speak(utterance);
-                      // Redirect after a short delay to allow the speech to play
-                      setTimeout(() => {
-                        window.location.href = 'select-invoice.html';
-                      }, 1500);
-                    });
-                  } catch (e) {
-                    const utterance = new SpeechSynthesisUtterance(defaultText);
-                    utterance.lang = useBn ? 'bn-IN' : 'en-US';
-                    utterance.rate = 1.0;
-                    utterance.pitch = 1.0;
-                    speechSynthesis.speak(utterance);
-                    // Redirect after a short delay to allow the speech to play
-                    setTimeout(() => {
-                      window.location.href = 'select-invoice.html';
-                    }, 1500);
-                  }
+                  const utterance = new SpeechSynthesisUtterance(sayText || (bnMatch ? 'ওপেন করছি' : 'Opening'));
+                  utterance.lang = bnMatch ? 'bn-IN' : 'en-US';
+                  utterance.rate = 1.0;
+                  utterance.pitch = 1.0;
+                  speechSynthesis.speak(utterance);
+                  // Redirect after a brief delay
+                  setTimeout(() => {
+                    window.location.href = destination || 'select-invoice.html';
+                  }, 900);
                 } else {
                   // Fallback: redirect immediately if speech synthesis is not supported
-                  window.location.href = 'select-invoice.html';
+                  window.location.href = destination || 'select-invoice.html';
                 }
                 return;
               } else if (commandRecognized && !event.results[i].isFinal) {

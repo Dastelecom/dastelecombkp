@@ -19,6 +19,9 @@
       },
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     .bank-logo{width:56px;height:56px;object-fit:contain;image-rendering:auto;}
     .emi-partner img{width:56px !important;height:56px !important;object-fit:contain;image-rendering:auto;}
@@ -180,12 +183,23 @@
         </div>
       </div>
       <div id="lastUpdate" class="text-gray-400 text-sm mt-2 mb-4 italic">
-        Last update from SmartBiller central server: <span id="lastUpdateTime">—</span>
+        Last update from <span id="lastUpdatePartner">SmartBiller central</span> server: <span id="lastUpdateTime">—</span>
       </div>
       <div class="glass-effect border border-gray-600 rounded-xl p-4 mb-4">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <input id="filterGlobal" type="text" placeholder="Search name, phone, loan, product, status" class="bg-gray-900 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <button id="filterReset" class="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 text-white text-sm px-3 py-2 rounded-md">Reset</button>
+        <div class="flex items-center gap-3 flex-nowrap w-full">
+          <input id="filterGlobal" type="text" placeholder="Search name, phone, loan, product, status" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[220px]">
+          <div class="flex items-center gap-2">
+            <label for="filterFromDate" class="text-xs text-gray-400 h-10 flex items-center px-2">From</label>
+            <input id="filterFromDate" type="date" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="filterToDate" class="text-xs text-gray-400 h-10 flex items-center px-2">To</label>
+            <input id="filterToDate" type="date" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
+          </div>
+          <div class="flex items-center gap-2 ml-auto">
+            <button id="exportPdf" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export to PDF</button>
+            <button id="exportExcel" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export to Excel</button>
+          </div>
         </div>
       </div>
 
@@ -305,6 +319,7 @@
     const dealerCode = document.getElementById('dealerCode');
     const defaultDealerCode = dealerCode ? dealerCode.textContent : '';
     const lastUpdateTime = document.getElementById('lastUpdateTime');
+    const lastUpdatePartner = document.getElementById('lastUpdatePartner');
     const emiMessage = document.getElementById('emiMessage');
     const emiReminder = document.getElementById('emiReminder');
     const loanRows = Array.from(document.querySelectorAll('#loanTable tr[data-nextemi]'));
@@ -315,14 +330,24 @@
     const filterLoan = document.getElementById('filterLoan');
     const filterProduct = document.getElementById('filterProduct');
     const filterStatus = document.getElementById('filterStatus');
+    const filterFromDate = document.getElementById('filterFromDate');
+    const filterToDate = document.getElementById('filterToDate');
     const filterReset = document.getElementById('filterReset');
 
     // initial last update
+    function displayPartnerName(partner){
+      if(!partner) return 'SmartBiller central';
+      const s = String(partner).toUpperCase();
+      if(s.includes('IDFC')) return 'IDFC BANK';
+      if(s.includes('TVS')) return 'TVS CREDIT';
+      return partner;
+    }
     function setLastUpdate(partner){
       const now = new Date();
-      lastUpdateTime.textContent = now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+      if (lastUpdateTime) lastUpdateTime.textContent = now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+      if (lastUpdatePartner) lastUpdatePartner.textContent = displayPartnerName(partner);
     }
-    setLastUpdate('SmartBiller');
+    setLastUpdate();
 
     // compute nearest upcoming EMI (optionally filtered by partner)
     function getNearestUpcomingEMI(filterPartner){
@@ -406,6 +431,10 @@
       const qLoan = sanitize(filterLoan && filterLoan.value);
       const qProduct = sanitize(filterProduct && filterProduct.value);
       const qStatus = sanitize(filterStatus && filterStatus.value);
+      const fromVal = filterFromDate && filterFromDate.value;
+      const toVal = filterToDate && filterToDate.value;
+      const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+      const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
 
       document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row)=>{
         const cells = row.cells;
@@ -415,6 +444,8 @@
         const status = sanitize((IDX_STATUS >= 0 && cells[IDX_STATUS]) ? cells[IDX_STATUS].textContent : '');
         const phoneData = row.dataset.phone || '';
         const phone = digits(phoneData);
+        const nextIso = row.getAttribute('data-nextemi');
+        const nextDt = nextIso ? new Date(nextIso) : null;
 
         let ok = true;
         if(qGlobal){
@@ -432,6 +463,12 @@
         if(qProduct) ok = ok && product.includes(qProduct);
         if(qStatus) ok = ok && status === qStatus;
         if(qPhone) ok = ok && phone.includes(qPhone);
+        if (fromDate || toDate) {
+          let inRange = !!nextDt;
+          if (inRange && fromDate) inRange = inRange && (nextDt >= fromDate);
+          if (inRange && toDate) inRange = inRange && (nextDt <= toDate);
+          ok = ok && inRange;
+        }
 
         row.style.display = ok ? '' : 'none';
         const details = row.nextElementSibling;
@@ -556,6 +593,10 @@
       });
     });
 
+    // Default selection: IDFC FIRST BANK
+    const defaultPartnerEl = document.querySelector('.partner-item[data-partner="IDFC FIRST BANK"]');
+    if (defaultPartnerEl) { defaultPartnerEl.click(); }
+
     // Close dropdown on outside click
     document.addEventListener('click', (e) => {
       if (partnerDropdown && partnerDropdownMenu && !partnerDropdown.contains(e.target)) {
@@ -563,8 +604,12 @@
       }
     });
 
-    // init: set reminder for all partners (choose nearest across all)
-    updateReminder();
+    // init: set reminder (respect selected partner if set)
+    if (selectedPartnerInput && selectedPartnerInput.value) {
+      updateReminder(selectedPartnerInput.value);
+    } else {
+      updateReminder();
+    }
     updateRowIndicators();
 
     // Initialize Filters & Search
@@ -573,6 +618,7 @@
     [filterGlobal, filterName, filterPhone, filterLoan, filterProduct].forEach(inp=>{
       if(inp){ inp.addEventListener('input', applyFilters); }
     });
+    [filterFromDate, filterToDate].forEach(inp=>{ if(inp){ inp.addEventListener('change', applyFilters); }});
     if(filterStatus){ filterStatus.addEventListener('change', applyFilters); }
     if(filterReset){
       filterReset.addEventListener('click', ()=>{
@@ -647,6 +693,194 @@
     document.getElementById('viewSchedule').addEventListener('click', ()=> {
       document.querySelector('table').scrollIntoView({behavior:'smooth', block:'center'});
     });
+
+    // ===== Export handlers =====
+    function getExportData(){
+      const table = document.querySelector('#loanTable')?.closest('table');
+      if(!table) return { headers: [], rows: [], headerIndices: [], rowNodes: [] };
+      const thAll = Array.from(table.querySelectorAll('thead th'));
+      // Include all columns except 'More Details'
+      const includeIdx = thAll
+        .map((th,i)=>({ i, label: (th.textContent||'').trim() }))
+        .filter(o => o.label.toLowerCase() !== 'more details')
+        .map(o => o.i);
+      const headers = includeIdx.map(i => (thAll[i].textContent||'').trim());
+      const rowNodes = [];
+      const rows = [];
+      document.querySelectorAll('#loanTable tr.premium-table-row').forEach(row => {
+        if (row.style.display === 'none') return; // export only visible rows
+        rowNodes.push(row);
+        const tds = Array.from(row.cells);
+        const values = includeIdx.map(idx => {
+          const td = tds[idx];
+          if (!td) return '';
+          let txt = (td.textContent || '').trim().replace(/\s+/g,' ');
+          if (!txt) {
+            const img = td.querySelector('img');
+            if (img) txt = (img.alt || img.title || '').trim();
+          }
+          return txt;
+        });
+        rows.push(values);
+      });
+      return { headers, rows, headerIndices: includeIdx, rowNodes };
+    }
+
+    async function exportToPDF(){
+      const meta = getExportData();
+      const { headers, rows, headerIndices, rowNodes } = meta;
+      if (!headers.length) return;
+      const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const title = 'Finance & Loan Management';
+      const footLine1 = 'This statement has been auto-generated by SmartBiller. No physical signature is required.';
+      const footLine2 = '© 2025 SmartBiller • Powered by Dastelecom.';
+
+      // Figure out special columns
+      const emiColIdx = headers.findIndex(h => h.toLowerCase() === 'emi partner');
+      const verifiedColIdx = headers.findIndex(h => h.toLowerCase() === 'verified');
+      const emiDomIdx = emiColIdx >= 0 ? headerIndices[emiColIdx] : -1;
+      const verifiedDomIdx = verifiedColIdx >= 0 ? headerIndices[verifiedColIdx] : -1;
+
+      // Preload images to data URLs
+      async function loadImageToDataURL(src){
+        return new Promise((resolve) => {
+          try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth || img.width;
+                canvas.height = img.naturalHeight || img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                resolve(dataUrl);
+              } catch(err){ resolve(null); }
+            };
+            img.onerror = () => resolve(null);
+            img.src = src;
+          } catch(e) { resolve(null); }
+        });
+      }
+
+      const imageMap = {};
+      const toLoad = new Set();
+      rowNodes.forEach((row)=>{
+        if (emiDomIdx >= 0) {
+          const td = row.cells[emiDomIdx];
+          const img = td && td.querySelector('img');
+          if (img && img.src) toLoad.add(img.src);
+        }
+        if (verifiedDomIdx >= 0) {
+          const td = row.cells[verifiedDomIdx];
+          const img = td && td.querySelector('img');
+          if (img && img.src) toLoad.add(img.src);
+        }
+      });
+      await Promise.all(Array.from(toLoad).map(async (src)=>{
+        imageMap[src] = await loadImageToDataURL(src);
+      }));
+
+      // Draw header/footer on each page
+      const topBarH = 56; // header bar height for centered title
+      const drawPageFrame = ()=>{
+        // Header banner with centered title
+        doc.setFillColor(30,58,138); // indigo-900
+        doc.rect(0, 0, pageWidth, topBarH, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(14);
+        doc.text(title, pageWidth/2, 34, { align: 'center' });
+
+        // Footer text (no background, black, bold, centered)
+        doc.setTextColor(0,0,0);
+        try { doc.setFont('helvetica', 'bold'); } catch(e) {}
+        doc.setFontSize(10);
+        doc.text(footLine1, pageWidth/2, pageHeight - 28, { align: 'center', maxWidth: pageWidth - 80 });
+        doc.text(footLine2, pageWidth/2, pageHeight - 12, { align: 'center', maxWidth: pageWidth - 80 });
+      };
+
+      // Build table with colored theme and custom cell drawings
+      if (doc.autoTable) {
+        const bodyForPdf = rows.map(r => r.slice());
+        if (emiColIdx >= 0) bodyForPdf.forEach(r => { r[emiColIdx] = ''; });
+        if (verifiedColIdx >= 0) bodyForPdf.forEach(r => { r[verifiedColIdx] = ''; });
+        doc.autoTable({
+          head: [headers],
+          body: bodyForPdf,
+          theme: 'grid',
+          styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [15,23,42] }, // slate-900 text
+          headStyles: { fillColor: [37,99,235], textColor: 255, fontStyle: 'bold' }, // blue-600
+          alternateRowStyles: { fillColor: [240,249,255] }, // sky-50
+          tableLineColor: [203,213,225], // slate-300 grid
+          tableLineWidth: 0.5,
+          margin: { top: topBarH + 12, bottom: 40, left: 10, right: 10 },
+          didDrawPage: drawPageFrame,
+          columnStyles: (function(){
+            const cs = {};
+            if (emiColIdx >= 0) cs[emiColIdx] = { cellWidth: 110, halign: 'center', minCellHeight: 32 };
+            if (verifiedColIdx >= 0) cs[verifiedColIdx] = { halign: 'center', cellWidth: 60, minCellHeight: 20 };
+            return cs;
+          })(),
+          didDrawCell: function(data) {
+            if (data.section !== 'body') return;
+            const rowIdx = data.row.index;
+            const colIdx = data.column.index;
+            const row = rowNodes[rowIdx];
+            if (!row) return;
+            // EMI Partner logo
+            if (emiColIdx >= 0 && colIdx === emiColIdx && emiDomIdx >= 0) {
+              const td = row.cells[emiDomIdx];
+              const img = td && td.querySelector('img');
+              if (img && imageMap[img.src]) {
+                const imgData = imageMap[img.src];
+                const maxW = Math.min(data.cell.width - 10, 92);
+                const maxH = Math.min(data.cell.height - 8, 28);
+                const w = maxW;
+                const h = maxH;
+                const x = data.cell.x + (data.cell.width - w)/2;
+                const y = data.cell.y + (data.cell.height - h)/2;
+                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch(e) {}
+              }
+            }
+            // Verified tick image
+            if (verifiedColIdx >= 0 && colIdx === verifiedColIdx && verifiedDomIdx >= 0) {
+              const td = row.cells[verifiedDomIdx];
+              const img = td && td.querySelector('img');
+              if (img && imageMap[img.src]) {
+                const imgData = imageMap[img.src];
+                const h = Math.min(data.cell.height - 6, 16);
+                const w = h;
+                const x = data.cell.x + (data.cell.width - w)/2;
+                const y = data.cell.y + (data.cell.height - h)/2;
+                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch(e) {}
+              }
+            }
+          }
+        });
+      }
+
+      const fname = `EMI_Management_${new Date().toISOString().slice(0,10)}.pdf`;
+      doc.save(fname);
+    }
+
+    function exportToExcel(){
+      const { headers, rows } = getExportData();
+      const aoa = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Loans');
+      const fname = `EMI_Management_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, fname);
+    }
+
+    const exportPdfBtn = document.getElementById('exportPdf');
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPDF);
+    const exportExcelBtn = document.getElementById('exportExcel');
+    if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
   </script>
 </body>
 </html>
