@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="/manifest.php">
   <meta name="theme-color" content="#ffffff">
   <title>Invoice Dashboard - Dastelecom</title>
@@ -10,279 +11,187 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    html {
-      overflow-x: hidden;
-      min-height: 100vh;
-      background: #000000;
-      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
-      background-size: 20px 20px;
-      background-attachment: fixed;
-    }
-    
     body {
-      font-family: 'Inter', sans-serif;
-      background: #000000;
-      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
-      background-size: 20px 20px;
-      background-attachment: fixed;
+      font-family: 'Outfit', sans-serif;
+      background-color: #fafbfc;
+      background-image:
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
+      color: #1e293b;
       min-height: 100vh;
-      position: relative;
       overflow-x: hidden;
-      margin: 0;
-      padding: 0;
     }
-    /* Full page background with radial gradient pattern - covers entire document */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000000;
-      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
-      background-size: 20px 20px;
-      background-attachment: fixed;
-      pointer-events: none;
-      z-index: -2;
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
-    /* Additional background layer that covers entire document */
-    body::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      min-height: 100%;
-      background: #000000;
-      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
-      background-size: 20px 20px;
-      pointer-events: none;
-      z-index: -3;
+
+    .glass-card:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.05),
+        0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border-color: rgba(255, 255, 255, 0.8);
     }
-    .card-hover {
+
+    .invoice-card {
+      background: white;
+      border: 1px solid #f1f5f9;
+      border-radius: 1.25rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
-      max-width: 380px;
-      min-width: 300px;
-      margin: 0 auto;
-      border: 1px solid #374151;
-      border-radius: 0.75rem;
-      padding: 1px;
-      backdrop-filter: blur(24px);
-      z-index: 10;
-      transition: all 0.3s ease;
-      cursor: pointer;
     }
-    
-    .card-hover:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(226, 203, 255, 0.4);
+
+    .invoice-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border-color: #cbd5e1;
     }
-    
-    .card-hover:hover::before {
-      animation: spin 1s linear infinite;
-    }
-    
-    .card-hover::before {
-      content: '';
-      position: absolute;
-      inset: -1000%;
-      animation: spin 2s linear infinite;
-      background: conic-gradient(from 90deg at 50% 50%, #E2CBFF 0%, #393BB2 50%, #E2CBFF 100%);
-      z-index: -1;
-    }
-    
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    
-    .card-content {
-      display: flex;
-      height: 100%;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.75rem;
-      background: rgba(17, 24, 39, 0.95);
-      backdrop-filter: blur(24px);
-      position: relative;
-      z-index: 1;
-    }
-    
-    @keyframes whiteGlowPulse {
-      0% {
-        opacity: 0.6;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-    /* Clean Search Bar - Invoice PDFs Style */
+
     .search-input {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid #e2e8f0;
       transition: all 0.3s ease;
+      font-family: 'Outfit', sans-serif;
     }
-    
+
     .search-input:focus {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(217, 119, 87, 0.5);
-      box-shadow: 0 0 20px rgba(217, 119, 87, 0.2);
+      background: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
       outline: none;
     }
-    
-    /* Button styling for invoice cards */
-    .btn-primary {
-      background: linear-gradient(135deg, rgba(217, 119, 87, 0.2), rgba(255, 150, 120, 0.2));
-      border: 1px solid rgba(217, 119, 87, 0.3);
-      min-width: 100px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.4s ease;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    }
-    
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-      );
-      transition: all 0.6s ease;
-    }
-    
-    .btn-primary:hover {
-      background: linear-gradient(135deg, rgba(217, 119, 87, 0.3), rgba(255, 150, 120, 0.3));
-      transform: translateY(-2px);
-      box-shadow: 
-        0 5px 15px -5px rgba(217, 119, 87, 0.4),
-        0 0 10px rgba(217, 119, 87, 0.2);
-    }
-    
-    .btn-primary:hover::before {
-      left: 100%;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .invoice-number {
-      font-size: 1.25rem;
-      letter-spacing: 0.025em;
-      font-family: 'Courier New', monospace;
-      font-weight: 600;
-      background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    }
-    .amount-text {
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
-    }
-    
 
-    
-    /* Additional white glow elements */
-    .container {
-      position: relative;
-      z-index: 10;
+    .btn-primary {
+      background: #0f172a;
+      color: white;
+      transition: all 0.2s ease;
     }
-    
-    .container::before {
-      display: none;
+
+    .btn-primary:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
-    
-    @keyframes floatingGlow {
-      0% {
-        transform: translate(-10px, -10px) scale(0.95);
-        opacity: 0.4;
+
+    .invoice-number {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .amount-text {
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      100% {
-        transform: translate(10px, 10px) scale(1.05);
-        opacity: 0.7;
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   </style>
 </head>
-<body class="min-h-screen overflow-x-hidden relative">
-  <!-- Background with radial gradient pattern - covers entire page -->
-  <div class="fixed inset-0 z-[-1] bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]" style="background-attachment: fixed;"></div>
-  <div class="container mx-auto px-4 py-8 relative z-10">
-    <!-- Enhanced Header -->
-    <div class="text-center mb-12 relative">
-      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent blur-sm"></div>
-      <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-fade-in relative z-10 text-white" style="text-shadow: 0 0 30px rgba(217, 119, 87, 0.8), 0 0 60px rgba(217, 119, 87, 0.4);">
-        📑 Invoice Dashboard
-      </h1>
-      <p class="text-xl relative z-10 animate-fade-in text-gray-300" style="color: rgb(217, 119, 87); text-shadow: 0 0 20px rgba(217, 119, 87, 0.5); animation-delay: 0.3s;">
-        Manage and view all your invoice records
-      </p>
-      <div class="mt-4 flex justify-center animate-fade-in" style="animation-delay: 0.6s;">
-        <div class="w-24 h-1 bg-gradient-to-r from-transparent via-orange-500/60 to-transparent rounded-full"></div>
+
+<body class="min-h-screen relative p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto relative z-10">
+    <!-- Header -->
+    <header class="w-full mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+      <a href="main.html"
+        class="flex items-center text-slate-500 hover:text-slate-800 transition-colors group self-start md:self-auto">
+        <div
+          class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-3 group-hover:border-slate-300 shadow-sm transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+        <span class="font-medium text-sm">Back to Dashboard</span>
+      </a>
+
+      <div class="text-center md:text-right">
+        <h1 class="text-4xl font-bold text-slate-900 tracking-tight mb-2">Invoice Dashboard</h1>
+        <p class="text-slate-500 font-medium">Manage and view all your invoice records</p>
       </div>
-    </div>
+    </header>
 
+    <!-- Search Section -->
+    <div class="glass-card rounded-[2rem] p-8 mb-10 text-center relative overflow-hidden">
+      <div
+        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-50">
+      </div>
 
-
-    <!-- Clean Search Bar - Invoice PDFs Style -->
-    <div class="mb-10">
       <div class="relative max-w-2xl mx-auto">
-        <input type="text" id="searchInput" placeholder="Search by invoice number or customer name..." 
-          class="w-full search-input text-white px-5 py-4 rounded-xl pl-12 text-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <input type="text" id="searchInput" placeholder="Search invoices..."
+          class="w-full search-input text-slate-800 px-6 py-4 rounded-2xl pl-14 text-lg font-medium placeholder:text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
+
       <!-- Search Results Counter -->
-      <div id="searchResults" class="text-center mt-4 opacity-0 transition-opacity duration-300">
-        <p class="text-sm text-gray-400">
-          <span class="inline-flex items-center gap-2">
-            <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
-            Found <span id="resultCount" class="text-orange-400 font-semibold">0</span> invoices
-          </span>
+      <div id="searchResults" class="mt-4 opacity-0 transition-opacity duration-300">
+        <p
+          class="text-sm font-medium text-slate-500 bg-white/50 inline-block px-4 py-1 rounded-full border border-slate-100">
+          Found <span id="resultCount" class="text-blue-600 font-bold">0</span> invoices
         </p>
       </div>
     </div>
-    <div id="loadingSpinner" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: rgb(217, 119, 87);"></div>
-      <p class="text-gray-300 mt-4" style="color: rgb(217, 119, 87);">Loading invoices...</p>
+
+    <div id="loadingSpinner" class="flex flex-col items-center justify-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-4"></div>
+      <p class="text-slate-500 font-medium animate-pulse">Loading invoices...</p>
     </div>
 
     <!-- Invoice Cards Container -->
-    <div id="invoiceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 hidden min-h-[200px]">
+    <div id="invoiceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden min-h-[200px]">
       <!-- Invoice cards will be dynamically inserted here -->
     </div>
 
     <!-- Empty State -->
-    <div id="emptyState" class="text-center py-12 hidden">
-      <div class="text-6xl mb-4">📋</div>
-      <h3 class="text-xl font-semibold text-white mb-2">No Invoices Found</h3>
-      <p class="text-gray-400">No invoices match your search criteria.</p>
+    <div id="emptyState"
+      class="hidden flex flex-col items-center justify-center py-20 text-center glass-card rounded-[2rem]">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-slate-800 mb-2">No Invoices Found</h3>
+      <p class="text-slate-500 max-w-sm mx-auto">We couldn't find any invoices matching your search criteria. Try
+        different keywords.</p>
     </div>
   </div>
 
-  <!-- Footer positioned at bottom -->
-  <footer class="w-full mt-16 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
-    <div class="text-center py-4">
-      <p class="text-gray-400">
-        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
-      </p>
-    </div>
+  <!-- Footer -->
+  <footer class="w-full mt-16 py-8 text-center border-t border-slate-200/50">
+    <p class="text-xs text-slate-400 font-medium">
+      © <span id="current-year"></span> <span class="text-slate-700 font-bold">Dastelecom</span>. All rights reserved.
+    </p>
   </footer>
 
   <script>
@@ -297,9 +206,9 @@
       const name = invoice.name || 'Unknown Customer';
       const date = invoice.date || 'Date Not Available';
       const total = invoice.total || '0';
-      
+
       console.log(`Creating card for invoice ${invoiceNo}, raw date:`, date);
-      
+
       // Format total without .00 if it's a whole number
       let formattedTotal;
       const totalFloat = parseFloat(total);
@@ -311,7 +220,7 @@
           maximumFractionDigits: 2
         });
       }
-      
+
       // Format date properly
       let formattedDate = date;
       if (date !== 'Unknown Date' && date !== 'No Date Provided' && date !== 'Date Not Set' && date !== 'Date Not Available') {
@@ -353,34 +262,42 @@
         // Use a more user-friendly message
         formattedDate = 'Date Not Available';
       }
-      
+
       console.log(`Final formatted date for invoice ${invoiceNo}:`, formattedDate);
-      
+
       return `
-        <div class="card-hover" style="animation: fadeIn 0.3s ease forwards ${index * 0.1}s; opacity: 0;">
-          <div class="card-content">
-            <div class="bg-slate-800/40 backdrop-blur-sm rounded-lg p-6 w-full">
-              <div class="flex justify-between items-start mb-4">
-                <div class="flex-1">
-                  <h3 class="invoice-number mb-1 text-white">Invoice #${invoiceNo}</h3>
-                  <p class="text-gray-400 text-sm">${formattedDate}</p>
-                </div>
-                <div class="text-right ml-4">
-                  <p class="text-xl font-semibold amount-text" style="color: rgb(217, 119, 87);">₹${formattedTotal}</p>
-                  <p class="text-sm text-gray-400">${name}</p>
-                </div>
-              </div>
-              <div class="mt-4 pt-4 border-t border-slate-700/50 flex justify-center space-x-4">
-                ${invoice.original ? 
-                  `<a href="${invoice.original}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Original</a>` : 
-                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
-                }
-                ${invoice.duplicate ? 
-                  `<a href="${invoice.duplicate}" target="_blank" class="btn-primary text-white px-6 py-2 rounded-md text-sm flex-1 text-center">Duplicate</a>` : 
-                  `<span class="text-gray-500 text-sm px-4 py-2 bg-gray-700/40 rounded-lg border border-gray-600/30 flex-1 text-center">Not Available</span>`
-                }
-              </div>
+        <div class="invoice-card p-6 flex flex-col h-full" style="animation: fadeIn 0.3s ease forwards ${index * 0.05}s; opacity: 0;">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <span class="inline-block px-2 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-2">Invoice</span>
+              <h3 class="invoice-number text-lg mb-0.5">#${invoiceNo}</h3>
+              <p class="text-slate-400 text-xs font-medium">${formattedDate}</p>
             </div>
+            <div class="text-right">
+              <p class="text-xl amount-text text-slate-900">₹${formattedTotal}</p>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-1">${name}</p>
+            </div>
+          </div>
+          
+          <div class="mt-auto pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
+            ${invoice.original ? 
+              `<a href="${invoice.original}" target="_blank" class="flex items-center justify-center p-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Original
+              </a>` : 
+              `<span class="flex items-center justify-center p-2.5 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold border border-slate-100 cursor-not-allowed">N/A</span>`
+            }
+            ${invoice.duplicate ? 
+              `<a href="${invoice.duplicate}" target="_blank" class="flex items-center justify-center p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+                Duplicate
+              </a>` : 
+              `<span class="flex items-center justify-center p-2.5 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold border border-slate-100 cursor-not-allowed">N/A</span>`
+            }
           </div>
         </div>
       `;
@@ -390,18 +307,18 @@
       const container = document.getElementById('invoiceContainer');
       const loadingSpinner = document.getElementById('loadingSpinner');
       const emptyState = document.getElementById('emptyState');
-      
+
       loadingSpinner.classList.add('hidden');
-      
+
       if (invoices.length === 0) {
         container.classList.add('hidden');
         emptyState.classList.remove('hidden');
         return;
       }
-      
+
       emptyState.classList.add('hidden');
       container.classList.remove('hidden');
-      
+
       container.innerHTML = invoices.map((invoice, index) => createInvoiceCard(invoice, index)).join('');
     }
 
@@ -411,43 +328,43 @@
         updateSearchFeedback(0, searchTerm);
         return;
       }
-      
+
       const filteredInvoices = allInvoices.filter(invoice => {
         const searchLower = searchTerm.toLowerCase().trim();
-        
+
         const invoiceNo = (invoice.invoiceNo || '').toString().toLowerCase();
         const name = (invoice.name || '').toString().toLowerCase();
         const date = (invoice.date || '').toString().toLowerCase();
         const total = (invoice.total || '').toString().toLowerCase();
-        
-        return invoiceNo.includes(searchLower) || 
-               name.includes(searchLower) ||
-               date.includes(searchLower) ||
-               total.includes(searchLower);
+
+        return invoiceNo.includes(searchLower) ||
+          name.includes(searchLower) ||
+          date.includes(searchLower) ||
+          total.includes(searchLower);
       });
-      
+
       displayInvoices(filteredInvoices);
       updateSearchFeedback(filteredInvoices.length, searchTerm);
     }
-    
+
     function updateSearchFeedback(count, searchTerm) {
       const searchInput = document.getElementById('searchInput');
       const searchResults = document.getElementById('searchResults');
       const resultCount = document.getElementById('resultCount');
-      
+
       if (!searchInput || !searchResults || !resultCount) {
         return;
       }
-      
+
       resultCount.textContent = count;
-      
+
       if (searchTerm.trim() === '') {
         searchResults.style.opacity = '0';
         searchInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
         searchInput.style.boxShadow = '';
       } else {
         searchResults.style.opacity = '1';
-        
+
         if (count === 0) {
           searchInput.style.borderColor = 'rgba(239, 68, 68, 0.5)';
           searchInput.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.2)';
@@ -463,22 +380,22 @@
     // Enhanced search functionality
     let searchTimeout;
     let searchInput;
-    
+
     // Initialize search functionality after DOM loads
     function initializeSearch() {
       searchInput = document.getElementById('searchInput');
-      
+
       if (!searchInput) {
         return;
       }
-      
+
       searchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
           filterInvoices(e.target.value);
         }, 200);
       });
-      
+
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           clearTimeout(searchTimeout);
@@ -486,13 +403,13 @@
           e.preventDefault();
         }
       });
-      
+
       searchInput.addEventListener('blur', (e) => {
         if (e.target.value.trim() === '') {
           filterInvoices('');
         }
       });
-      
+
       searchInput.addEventListener('focus', (e) => {
         e.target.style.borderColor = 'rgba(217, 119, 87, 0.5)';
         e.target.style.boxShadow = '0 0 20px rgba(217, 119, 87, 0.2)';
@@ -500,17 +417,17 @@
     }
 
     // Initialize everything when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Set current year in footer
       document.getElementById('current-year').textContent = new Date().getFullYear();
-      
+
       // Initialize search functionality
       initializeSearch();
-      
+
       // Load data from Google Sheets
       loadInvoiceData();
     });
-    
+
     function loadInvoiceData() {
       console.log('Fetching data from Google Sheets URL:', sheetURL);
       fetch(sheetURL)
@@ -532,23 +449,23 @@
             console.log('Extracted JSON string:', jsonString.substring(0, 500) + '...');
             const json = JSON.parse(jsonString);
             console.log('Parsed JSON:', json);
-            
+
             // Check if data exists
             if (!json.table || !json.table.rows) {
               throw new Error('Invalid data structure in response');
             }
             console.log(`Found ${json.table.rows.length} rows in the data`);
-            
+
             const rows = json.table.rows || [];
             allInvoices = [];
-            
+
             console.log(`Processing ${rows.length} rows from Google Sheet`);
-            
+
             // Handle case where there's no data
             if (rows.length === 0) {
               console.log('No rows found in the Google Sheet');
             }
-            
+
             rows.forEach((row, i) => {
               try {
                 const cells = row.c;
@@ -557,11 +474,11 @@
                 // Safely extract cell values with better fallbacks
                 const invoiceNo = (cells[0] && cells[0].v !== null && cells[0].v !== undefined) ? String(cells[0].v) : "N/A";
                 const name = (cells[1] && cells[1].v !== null && cells[1].v !== undefined) ? String(cells[1].v) : "Unknown Customer";
-                
+
                 // Handle date formatting from Google Sheets
                 let date = "No Date Provided";
                 console.log(`Processing date for row ${i}, raw cell data:`, cells[2]);
-                
+
                 if (cells[2]) {
                   // Check if the cell exists but is empty
                   if (cells[2].v === null || cells[2].v === undefined || cells[2].v === '') {
@@ -570,7 +487,7 @@
                   } else {
                     const dateValue = cells[2].v;
                     console.log(`Raw date value for row ${i}:`, dateValue, typeof dateValue);
-                    
+
                     // If it's a date object from Google Sheets, format it properly
                     if (typeof dateValue === 'object') {
                       // Use the formatted value if available, otherwise process the raw value
@@ -652,7 +569,7 @@
                 } else {
                   console.log(`No date cell found for row ${i}`);
                 }
-                
+
                 const total = (cells[3] && cells[3].v !== null && cells[3].v !== undefined) ? String(cells[3].v) : "0";
                 const original = (cells[4] && cells[4].v !== null && cells[4].v !== undefined) ? String(cells[4].v) : "";
                 const duplicate = (cells[5] && cells[5].v !== null && cells[5].v !== undefined) ? String(cells[5].v) : "";
@@ -666,7 +583,7 @@
                   original,
                   duplicate
                 };
-                
+
                 console.log(`Processed invoice ${i}:`, invoice);
                 console.log(`Raw date value for invoice ${i}:`, cells[2]?.v);
                 console.log(`Formatted date for invoice ${i}:`, date);
@@ -684,7 +601,7 @@
                 // Continue processing other rows
               }
             });
-            
+
             console.log(`Displaying ${allInvoices.length} invoices`);
             displayInvoices(allInvoices);
           } catch (parseError) {
@@ -696,7 +613,7 @@
           console.error("Error loading sheet:", err);
           document.getElementById('loadingSpinner').classList.add('hidden');
           document.getElementById('emptyState').classList.remove('hidden');
-          
+
           // Show more specific error messages
           let errorMessage = 'There was an error loading the invoice data. Please try again later.';
           if (err.message.includes('Failed to fetch')) {
@@ -706,19 +623,20 @@
           } else if (err.message.includes('JSON')) {
             errorMessage = 'The invoice data format is invalid. Please contact support.';
           }
-          
+
           document.querySelector('#emptyState h3').textContent = 'Error Loading Data';
           document.querySelector('#emptyState p').textContent = errorMessage;
         });
     }
   </script>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch((err) => console.log('Service Worker registration failed:', err));
+    }
+  </script>
 </body>
+
 </html>

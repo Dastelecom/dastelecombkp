@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,656 +8,595 @@
   <meta name="theme-color" content="#ffffff">
   <title>Dastelecom Invoice Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 4px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.7);
-    }
-
     body {
-      background: #000000;
-      min-height: 100vh;
-      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      background-color: #fafbfc;
+      background-image:
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
+      color: #1e293b;
     }
 
-    /* Glass card effect */
-    .glass-card {
-      background: rgba(0, 9, 29, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 32px 0 rgba(255, 255, 255, 0.02),
-        0 0 4px 0 rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
+    /* Animation classes */
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
     }
 
-    .glass-card:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 32px 0 rgba(255, 255, 255, 0.03),
-        0 0 8px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    /* Glow text effect */
-    .glow-text {
-      color: #ffffff;
-      text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.5),
-        0 0 20px rgba(255, 255, 255, 0.3),
-        0 0 30px rgba(255, 255, 255, 0.1);
-    }
-
-    /* Input fields */
-    input[type="text"],
-    input[type="tel"],
-    input[type="number"] {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(12px);
-      padding: 0.875rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.95rem;
-      letter-spacing: 0.025em;
-      box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        inset 0 0 8px rgba(255, 255, 255, 0.05);
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-    }
-
-    input[type="text"]:hover,
-    input[type="tel"]:hover,
-    input[type="number"]:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.2),
-        inset 0 0 10px rgba(255, 255, 255, 0.1),
-        0 0 15px rgba(255, 255, 255, 0.2);
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-    }
-
-    input[type="text"]:focus,
-    input[type="tel"]:focus,
-    input[type="number"]:focus {
-      outline: none;
-      background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(255, 255, 255, 0.3);
-      box-shadow: 
-        0 8px 16px rgba(0, 0, 0, 0.2),
-        0 0 0 2px rgba(255, 255, 255, 0.2),
-        inset 0 0 12px rgba(255, 255, 255, 0.1),
-        0 0 20px rgba(255, 255, 255, 0.3);
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    }
-
-    /* Remove arrows from number inputs */
-    input[type="number"]::-webkit-inner-spin-button, 
-    input[type="number"]::-webkit-outer-spin-button { 
-      -webkit-appearance: none; 
-      margin: 0; 
-    }
-    
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-
-    /* Placeholder styling */
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.3);
-      transition: all 0.3s ease;
-    }
-
-    input:hover::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-
-    input:focus::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-      transform: translateX(4px);
-    }
-
-    /* Price field styling */
-    .price-field {
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: rgba(255, 255, 255, 1) !important;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.5),
-        0 0 20px rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.3) !important;
-      box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.2),
-        inset 0 0 10px rgba(255, 255, 255, 0.1),
-        0 0 15px rgba(255, 255, 255, 0.2) !important;
-      transition: all 0.3s ease;
-    }
-    
-    .price-field:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-      text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.7),
-        0 0 20px rgba(255, 255, 255, 0.5),
-        0 0 30px rgba(255, 255, 255, 0.3);
-      box-shadow: 
-        0 8px 25px rgba(0, 0, 0, 0.3),
-        0 0 0 2px rgba(255, 255, 255, 0.3),
-        inset 0 0 15px rgba(255, 255, 255, 0.2),
-        0 0 20px rgba(255, 255, 255, 0.3) !important;
-    }
-
-    /* Disabled input styling */
-    input:disabled {
-      background: rgba(255, 255, 255, 0.02);
-      border-color: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.3);
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    input:disabled::placeholder {
-      color: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Form label styling */
-    .form-label {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-      transition: all 0.3s ease;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    }
-
-    /* Select styling */
-    .custom-select {
-      position: relative;
-      display: block;
-    }
-    
-    .custom-select select {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #ffffff;
-      padding: 0.875rem 2.5rem 0.875rem 1rem;
-      border-radius: 0.75rem;
-      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      width: 100%;
-      font-size: 0.95rem;
-      font-weight: 500;
-      letter-spacing: 0.025em;
-      box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.1),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        inset 0 1px 3px rgba(255, 255, 255, 0.1);
-      position: relative;
-      z-index: 1;
-    }
-    
-    .custom-select::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: 1rem;
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 8px solid rgba(255, 255, 255, 0.7);
-      pointer-events: none;
-      transition: all 0.3s ease;
-      z-index: 2;
-    }
-    
-    .custom-select:hover::after {
-      border-top-color: rgba(217, 119, 87, 0.9);
-      transform: translateY(-50%) scale(1.1);
-    }
-    
-    .custom-select select:hover {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-      border-color: rgba(217, 119, 87, 0.4);
-      box-shadow: 
-        0 8px 25px rgba(0, 0, 0, 0.15),
-        0 0 0 2px rgba(217, 119, 87, 0.2),
-        inset 0 1px 3px rgba(255, 255, 255, 0.15),
-        0 0 20px rgba(217, 119, 87, 0.1);
-      transform: translateY(-1px);
-    }
-    
-    .custom-select select:focus {
-      outline: none;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-      border-color: rgba(217, 119, 87, 0.6);
-      box-shadow: 
-        0 12px 35px rgba(0, 0, 0, 0.2),
-        0 0 0 3px rgba(217, 119, 87, 0.3),
-        inset 0 1px 3px rgba(255, 255, 255, 0.2),
-        0 0 30px rgba(217, 119, 87, 0.2);
-      transform: translateY(-2px);
-      color: rgba(255, 255, 255, 0.95);
-    }
-    
-    .custom-select select:focus + .custom-select::after {
-      border-top-color: rgba(217, 119, 87, 1);
-      transform: translateY(-50%) scale(1.2);
-    }
-    
-    .custom-select select:disabled {
-      background: rgba(255, 255, 255, 0.02);
-      border-color: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.3);
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
-    
-    .custom-select select:disabled + .custom-select::after {
-      border-top-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    /* Option styling */
-    .custom-select select option {
-      background: rgba(15, 23, 42, 0.95);
-      color: #ffffff;
-      padding: 0.5rem;
-      border: none;
-      font-weight: 500;
-    }
-    
-    .custom-select select option:hover {
-      background: rgba(217, 119, 87, 0.2);
-      color: rgba(255, 255, 255, 0.95);
-    }
-    
-    .custom-select select option:checked {
-      background: rgba(217, 119, 87, 0.3);
-      color: #ffffff;
-      font-weight: 600;
-    }
-    
-    /* Enhanced animation for select focus */
-    @keyframes selectGlow {
-      0% {
-        box-shadow: 
-          0 4px 15px rgba(0, 0, 0, 0.1),
-          0 0 0 1px rgba(255, 255, 255, 0.1);
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      50% {
-        box-shadow: 
-          0 8px 25px rgba(217, 119, 87, 0.2),
-          0 0 0 2px rgba(217, 119, 87, 0.4),
-          0 0 20px rgba(217, 119, 87, 0.1);
-      }
-      100% {
-        box-shadow: 
-          0 4px 15px rgba(0, 0, 0, 0.1),
-          0 0 0 1px rgba(255, 255, 255, 0.1);
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
-    /* Glowing button effect */
-    .glow-btn {
-      border: none;
-      outline: none;
-      color: #FFF;
-      cursor: pointer;
-      position: relative;
-      z-index: 0;
-      border-radius: 12px;
+    @keyframes slideUpFade {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    
-    .glow-btn::after {
-      content: "";
-      z-index: -1;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background-color: #333;
-      left: 0;
-      top: 0;
-      border-radius: 10px;
-    }
-    
-    .glow-btn::before {
-      content: "";
-      background: linear-gradient(
-        45deg,
-        #FF0000, #FF7300, #FFFB00, #48FF00,
-        #00FFD5, #002BFF, #FF00C8, #FF0000
-      );
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      background-size: 600%;
-      z-index: -1;
-      width: calc(100% + 4px);
-      height: calc(100% + 4px);
-      filter: blur(8px);
-      animation: glowing 20s linear infinite;
-      transition: opacity .3s ease-in-out;
-      border-radius: 10px;
+
+    .animate-up {
+      animation: slideUpFade 0.5s ease-out forwards;
       opacity: 0;
     }
-    
-    @keyframes glowing {
-      0% {background-position: 0 0;}
-      50% {background-position: 400% 0;}
-      100% {background-position: 0 0;}
-    }
-    
-    .glow-btn:hover::before {
-      opacity: 1;
-    }
-    
-    .glow-btn:active:after {
-      background: transparent;
-    }
-    
-    .glow-btn:active {
-      color: #000;
-      font-weight: bold;
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
-    /* Submit button styling */
-    .submit-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-      transition: all 0.3s ease;
+    .card-shadow {
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
     }
 
-    .submit-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
+    /* Custom Focus Ring */
+    .focus-ring:focus {
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+      border-color: #3b82f6;
+    }
+
+    .contact-input {
+      background: #ffffff;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .contact-input:focus {
       transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+      border-color: #3b82f6;
     }
 
-    /* Success message styling */
-    .success-msg {
-      background: rgba(34, 197, 94, 0.1);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.2),
-        inset 0 0 32px 0 rgba(34, 197, 94, 0.05);
+    /* Selection Card Styles */
+    .type-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .type-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08), 0 4px 12px -4px rgba(0, 0, 0, 0.04);
+      border-color: #93c5fd;
+    }
+
+    .type-card:active {
+      transform: scale(0.98);
+    }
+
+    .type-card.active {
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+
+    .type-card.active .indicator {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.2s ease;
+    }
+
+    /* Dropdown Styles */
+    .dropdown-list {
+      display: none;
+      position: absolute;
+      width: 100%;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      margin-top: 0.5rem;
+      z-index: 50;
+      max-height: 15rem;
+      overflow-y: auto;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f8fafc;
+    }
+
+    .dropdown-item img {
+      height: 24px;
+      margin-right: 10px;
     }
   </style>
 </head>
-<body class="min-h-screen bg-black text-white">
-  <!-- Background with dotted grid -->
-  <div class="fixed top-0 left-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
 
-  <!-- Header -->
-  <div class="bg-[#00091d] text-white flex items-center justify-center px-4 h-16 relative z-30 border-b border-white/10">
-    <h1 class="text-xl font-semibold glow-text">Dastelecom Invoice Generator</h1>
-  </div>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-blue-600">
 
-  <!-- Main content wrapper -->
-  <div class="flex items-center justify-center p-6 min-h-[calc(100vh-4rem)]">
-    <!-- Main content -->
-    <div class="glass-card p-8 rounded-2xl w-full max-w-md relative z-20">
-      <h2 class="text-2xl font-bold glow-text mb-6 text-center">Select Invoice Type</h2>
+  <!-- Navigation -->
+  <nav
+    class="w-full py-4 px-6 md:px-12 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100/50">
+    <div></div>
+    <a href="main.html"
+      class="group flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-50 transition-colors text-slate-500 hover:text-slate-800 font-medium text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Back to Dashboard</span>
+    </a>
+  </nav>
 
-      <div class="custom-select mb-6">
-        <select id="invoiceType" class="w-full" required>
-          <option disabled selected>Select Option</option>
-          <option value="emi">Invoice for EMI</option>
-          <option value="noemi">Invoice without EMI</option>
-        </select>
+  <!-- Main Content -->
+  <main class="flex-grow p-4 sm:p-6 lg:p-12">
+    <div class="max-w-4xl mx-auto space-y-8">
+
+      <!-- Header Area -->
+      <div class="text-center animate-up">
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Create New Invoice</h1>
+        <p class="text-slate-500">Choose the type of invoice you want to generate</p>
       </div>
 
-      <div id="emiForm" class="hidden mt-6 text-left space-y-4">
-        <h3 class="text-xl font-semibold text-sky-400 mb-4">Invoice for EMI</h3>
+      <!-- Invoice Type Selection -->
+      <section class="animate-up" style="animation-delay: 0.1s;">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <!-- EMI Invoice -->
+          <button onclick="selectType('emi')" id="btn-emi"
+            class="type-card bg-white p-6 rounded-[24px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl flex flex-col items-center justify-center gap-4 group text-center w-full min-h-[160px]">
+            <div class="indicator text-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div
+              class="bg-blue-50 text-blue-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <div>
+              <span class="block font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">EMI
+                Invoice</span>
+              <span class="text-sm text-slate-500">For financed devices</span>
+            </div>
+          </button>
 
-        <label class="block font-medium text-gray-300">Customer Name</label>
-        <input
-          id="customerName"
-          type="text"
-          placeholder="Enter name"
-          class="w-full p-3.5 rounded-lg bg-white/[0.03] border border-white/10 focus:border-white/30 hover:border-white/20 focus:outline-none transition-all duration-300 hover:bg-white/[0.05] focus:bg-white/[0.07] hover:shadow-[0_4px_8px_rgba(0,0,0,0.2),0_0_0_1px_rgba(255,255,255,0.2),inset_0_0_10px_rgba(255,255,255,0.1),0_0_15px_rgba(255,255,255,0.1)] focus:shadow-[0_8px_16px_rgba(0,0,0,0.2),0_0_0_2px_rgba(255,255,255,0.2),inset_0_0_12px_rgba(255,255,255,0.1),0_0_20px_rgba(255,255,255,0.2),0_0_40px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 focus:-translate-y-1"
-          required
-        />
+          <!-- No EMI Invoice -->
+          <button onclick="selectType('noemi')" id="btn-noemi"
+            class="type-card bg-white p-6 rounded-[24px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl flex flex-col items-center justify-center gap-4 group text-center w-full min-h-[160px]">
+            <div
+              class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <span
+                class="block font-bold text-lg text-slate-800 group-hover:text-emerald-600 transition-colors">Standard
+                Invoice</span>
+              <span class="text-sm text-slate-500">Regular full payment</span>
+            </div>
+          </button>
 
-        <label class="block font-medium text-gray-300">Customer Address</label>
-        <input id="customerAddress" type="text" placeholder="Enter address" class="w-full p-3 rounded-lg" required />
+          <!-- Non-GST Bill -->
+          <button onclick="selectType('nongst')" id="btn-nongst"
+            class="type-card bg-white p-6 rounded-[24px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl flex flex-col items-center justify-center gap-4 group text-center w-full min-h-[160px]">
+            <div
+              class="bg-amber-50 text-amber-600 p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <span class="block font-bold text-lg text-slate-800 group-hover:text-amber-600 transition-colors">Non-GST
+                Bill</span>
+              <span class="text-sm text-slate-500">Estimate / Challan</span>
+            </div>
+          </button>
+        </div>
+      </section>
 
-        <label class="block font-medium text-gray-300">Customer Phone Number</label>
-        <input
-          id="customerPhone"
-          type="tel"
-          placeholder="Enter phone number"
-          class="w-full p-3 rounded-lg"
-          required
-          pattern="^\d{10,15}$"
-          title="Enter 10 to 15 digit phone number"
-        />
+      <!-- EMI Form (Hidden initially) -->
+      <div id="emiForm" class="hidden space-y-6 animate-fade-in pb-12">
 
-        <label class="block font-medium text-gray-300">Mobile Brand Name</label>
-        <div class="custom-select">
-          <select id="mobileBrand" class="w-full" required>
-            <option disabled selected>Select Mobile Brand</option>
-            <!-- Brands will be loaded from Firebase -->
-          </select>
+        <!-- Customer Details Card -->
+        <div class="glass-effect rounded-[32px] card-shadow border border-white p-1">
+          <div class="bg-gradient-to-b from-white to-slate-50/50 rounded-[28px] p-6 md:p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+              <span
+                class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fill-rule="evenodd"
+                    d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                    clip-rule="evenodd" />
+                </svg>
+              </span>
+              Customer Details
+            </h3>
+            <div class="space-y-5">
+              <div class="group">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Customer
+                  Name</label>
+                <input id="customerName" type="text" placeholder="Enter full name"
+                  class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                  required />
+              </div>
+              <div class="group">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Address</label>
+                <input id="customerAddress" type="text" placeholder="Enter residential address"
+                  class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                  required />
+              </div>
+              <div class="group">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Phone
+                  Number</label>
+                <input id="customerPhone" type="tel" placeholder="Enter phone number"
+                  class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                  required pattern="^\d{10,15}$" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label class="block font-medium text-gray-300 mt-4">Mobile Model</label>
-        <div class="custom-select">
-          <select id="mobileModel" class="w-full" disabled required>
-            <option disabled selected>Select Mobile Model</option>
-            <!-- Models will be loaded based on selected brand -->
-          </select>
+        <!-- Product Details Card -->
+        <div class="glass-effect rounded-[32px] card-shadow border border-white p-1">
+          <div class="bg-gradient-to-b from-white to-slate-50/50 rounded-[28px] p-6 md:p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+              <span
+                class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.816 14.769 2.156 18 4.828 18h10.343c2.673 0 4.012-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a4 4 0 00-2.17-.102l1.027-1.028A3 3 0 009 8.172zM4.929 16.929A1.92 1.92 0 006.5 17h6a1.92 1.92 0 001.571-.071l-.147.147H5.076l-.147-.147z"
+                    clip-rule="evenodd" />
+                </svg>
+              </span>
+              Product Details
+            </h3>
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Mobile
+                  Brand</label>
+                <div class="relative">
+                  <div id="brandBtn"
+                    class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none flex items-center justify-between cursor-pointer"
+                    tabindex="0">
+                    <div class="flex items-center gap-3">
+                      <img id="brandIcon" src="" class="h-6 hidden" alt="Brand Logo">
+                      <span id="brandPlaceholder" class="text-slate-500 font-medium">Select Mobile Brand</span>
+                    </div>
+                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div id="brandList" class="dropdown-list">
+                    <!-- Items will be injected here -->
+                  </div>
+                  <!-- Hidden input to maintain compatibility and form submission -->
+                  <input type="text" id="mobileBrand" class="absolute opacity-0 w-0 h-0" required>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Mobile
+                  Model</label>
+                <div class="relative">
+                  <select id="mobileModel"
+                    class="contact-input w-full appearance-none rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none disabled:opacity-50 disabled:bg-slate-50 text-slate-700 font-medium"
+                    disabled required>
+                    <option disabled selected>Select Mobile Model</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-5">
+                <div>
+                  <label id="ramRomLabel"
+                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">RAM + ROM</label>
+                  <div class="relative">
+                    <select id="ramRomSelect"
+                      class="contact-input w-full appearance-none rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none disabled:opacity-50 disabled:bg-slate-50 text-slate-700 font-medium"
+                      disabled required>
+                      <option disabled selected>Variant</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label id="colorLabel"
+                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Color</label>
+                  <div class="relative">
+                    <select id="colorSelect"
+                      class="contact-input w-full appearance-none rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none disabled:opacity-50 disabled:bg-slate-50 text-slate-700 font-medium"
+                      disabled required>
+                      <option disabled selected>Color</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label id="priceLabel"
+                  class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Price (₹)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-4 text-slate-400 font-bold">₹</span>
+                  <input id="priceInput" type="number" step="0.01" min="0" placeholder="Enter price with GST"
+                    class="contact-input w-full rounded-xl border border-slate-200 p-4 pl-9 text-sm focus-ring outline-none text-slate-900 font-bold" />
+                </div>
+              </div>
+
+              <div>
+                <label id="priceNoGstLabel"
+                  class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Price without GST
+                  (₹)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-4 text-slate-400 font-bold">₹</span>
+                  <input id="priceNoGstInput" type="number" step="0.01" min="0" placeholder="Auto-calculated"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 pl-9 text-sm outline-none font-semibold text-slate-500 cursor-not-allowed"
+                    readonly />
+                </div>
+              </div>
+
+              <div id="priceContainer" class="hidden"></div>
+            </div>
+          </div>
         </div>
 
-        <label id="ramRomLabel" class="block font-medium text-gray-300">RAM + ROM</label>
-        <div class="custom-select">
-          <select id="ramRomSelect" class="w-full" disabled required>
-            <option disabled selected>Select Variant</option>
-            <!-- RAM+ROM options will be loaded based on selected model -->
-          </select>
+        <!-- Payment Details Card -->
+        <div class="glass-effect rounded-[32px] card-shadow border border-white p-1">
+          <div class="bg-gradient-to-b from-white to-slate-50/50 rounded-[28px] p-6 md:p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+              <span
+                class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                  <path fill-rule="evenodd"
+                    d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"
+                    clip-rule="evenodd" />
+                </svg>
+              </span>
+              Payment Details
+            </h3>
+
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">EMI
+                  Partner</label>
+                <div class="relative">
+                  <select id="emiPartner"
+                    class="contact-input w-full appearance-none rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                    required>
+                    <option disabled selected>Select Partner</option>
+                    <option>TVS Credit</option>
+                    <option>IDFC FIRST BANK</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Down
+                    Payment</label>
+                  <input id="downPayment" type="number" placeholder="Amount"
+                    class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                    required min="0" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">EMI
+                    Months</label>
+                  <input id="emiMonths" type="number" placeholder="Months"
+                    class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                    required min="1" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">EMI
+                    Amount</label>
+                  <input id="emiAmount" type="number" placeholder="Monthly EMI"
+                    class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-medium"
+                    required min="0" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Total
+                    Payment</label>
+                  <input id="totalPayment" type="number" readonly
+                    class="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm outline-none font-bold text-blue-600 cursor-not-allowed" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <label id="colorLabel" class="block font-medium text-gray-300">Color</label>
-        <div class="custom-select">
-          <select id="colorSelect" class="w-full" disabled required>
-            <option disabled selected>Select Color</option>
-            <!-- Colors will be loaded based on selected model -->
-          </select>
+        <!-- IMEI Details Card -->
+        <div class="glass-effect rounded-[32px] card-shadow border border-white p-1">
+          <div class="bg-gradient-to-b from-white to-slate-50/50 rounded-[28px] p-6 md:p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-3">
+              <span
+                class="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z"
+                    clip-rule="evenodd" />
+                  <path
+                    d="M11 4a1 1 0 10-2 0v1a1 1 0 102 0V4zM10 7a1 1 0 011 1v1h2a1 1 0 110 2h-3a1 1 0 01-1-1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v2a1 1 0 11-2 0v-3zM7 11a1 1 0 10-2 0v1a1 1 0 102 0V11zM13 15a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" />
+                </svg>
+              </span>
+              IMEI Details
+            </h3>
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">IMEI Number
+                  1</label>
+                <input id="imei1" type="text" maxlength="15" placeholder="Enter 15-digit IMEI"
+                  class="contact-input w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-mono tracking-wide"
+                  inputmode="numeric" pattern="^\d{15}$" required />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">IMEI Number
+                  2</label>
+                <input id="imei2" type="text" maxlength="15" placeholder="Last 2 digits editable only"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm outline-none cursor-not-allowed font-mono tracking-wide text-slate-500"
+                  inputmode="numeric" pattern="^\d{15}$" disabled required />
+                <p id="imei2Hint" class="text-xs text-slate-400 mt-2 flex items-center gap-1.5 font-medium ml-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  First 13 digits auto-filled from IMEI 1
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <label id="priceLabel" class="block font-medium text-white glow-text">Price (₹)</label>
-        <div class="relative" id="priceInputContainer">
-          <span class="absolute left-3 top-3 text-white font-semibold">₹</span>
-          <input
-            id="priceInput"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="Enter price with GST"
-            class="w-full p-3 pl-8 border border-white/30 rounded-lg bg-transparent text-white font-semibold price-field"
-          />
-        </div>
-
-        <label id="priceNoGstLabel" class="block font-medium text-white glow-text">Price without GST (₹)</label>
-        <div class="relative">
-          <span class="absolute left-3 top-3 text-white font-semibold">₹</span>
-          <input
-            id="priceNoGstInput"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="Auto-calculated (without 18% GST)"
-            class="w-full p-3 pl-8 border border-white/30 rounded-lg bg-slate-800/50 text-white font-semibold price-field"
-            readonly
-          />
-        </div>
-
-        <!-- Hidden container, no longer showing price info text -->
-        <div id="priceContainer" class="hidden mt-2 text-gray-800 font-medium"></div>
-
-        <label class="block font-medium text-gray-300">EMI Partner</label>
-        <div class="custom-select">
-          <select id="emiPartner" class="w-full" required>
-            <option disabled selected>Select Partner</option>
-            <option>TVS Credit</option>
-            <option>IDFC FIRST BANK</option>
-          </select>
-        </div>
-
-        <label class="block font-medium text-gray-300">Down Payment (₹)</label>
-        <input
-          id="downPayment"
-          type="number"
-          placeholder="Enter amount"
-          class="w-full p-3 rounded-lg"
-          required
-          min="0"
-        />
-
-        <label class="block font-medium text-gray-300">EMI Months</label>
-        <input
-          id="emiMonths"
-          type="number"
-          placeholder="e.g. 6, 12, 24"
-          class="w-full p-3 rounded-lg"
-          required
-          min="1"
-        />
-
-        <label class="block font-medium text-gray-300">EMI Amount (₹)</label>
-        <input
-          id="emiAmount"
-          type="number"
-          placeholder="Monthly EMI"
-          class="w-full p-3 rounded-lg"
-          required
-          min="0"
-        />
-
-        <label class="block font-medium text-gray-300">Total Payment Amount (₹)</label>
-        <input
-          id="totalPayment"
-          type="number"
-          readonly
-          class="w-full p-3 rounded-lg bg-slate-800/50 text-sky-400 font-semibold"
-        />
-
-        <label class="block font-medium text-gray-300">IMEI Number 1</label>
-        <input
-          id="imei1"
-          type="text"
-          maxlength="15"
-          placeholder="Enter 15-digit IMEI Number 1"
-          class="w-full p-3 rounded-lg"
-          inputmode="numeric"
-          pattern="^\d{15}$"
-          required
-        />
-
-        <label class="block font-medium text-gray-300 mt-4">IMEI Number 2</label>
-        <input
-          id="imei2"
-          type="text"
-          maxlength="15"
-          placeholder="Last 2 digits editable only"
-          class="w-full p-3 rounded-lg bg-slate-800/50"
-          inputmode="numeric"
-          pattern="^\d{15}$"
-          disabled
-          required
-        />
-        <p id="imei2Hint" class="text-sm text-gray-400 mt-1">First 13 digits auto-filled, last 2 digits editable</p>
 
         <!-- Submit Button -->
-        <button
-          id="submitBtn"
-          class="w-full mt-6 glow-btn submit-btn text-white font-semibold py-3 px-6 rounded-lg"
-          type="button"
-        >
-          Submit
-        </button>
+        <div class="pt-4 pb-8">
+          <button id="submitBtn"
+            class="w-full group relative overflow-hidden bg-slate-900 text-white p-5 rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 active:scale-[0.98] flex justify-center items-center gap-3"
+            type="button">
+            <span>Submit Invoice</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-1"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </button>
+        </div>
 
-        <!-- Preview Section (Hidden by default) -->
-        <div id="previewSection" class="hidden mt-6 glass-card p-6 rounded-xl">
-          <h3 class="text-xl font-semibold text-sky-400 mb-4 text-center">Invoice Preview</h3>
-          
-          <!-- Preview Content -->
-          <div id="previewContent" class="space-y-3 mb-6">
-            <!-- Preview data will be inserted here -->
+        <!-- Preview Section -->
+        <div id="previewSection" class="hidden animate-fade-in">
+          <div class="glass-effect rounded-[32px] card-shadow border border-white p-6 mb-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100/50">Invoice Preview</h3>
+            <div id="previewContent" class="space-y-4 text-sm font-mono text-slate-700">
+              <!-- Preview data inserted here -->
+            </div>
           </div>
-          
-          <!-- Action Buttons -->
-          <div class="flex space-x-4">
-            <button
-              id="backBtn"
-              class="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-semibold"
-              type="button"
-            >
-              Back
+
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button id="backBtn"
+              class="flex-1 py-4 px-6 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 rounded-2xl transition-all font-bold shadow-sm"
+              type="button">
+              Edit Details
             </button>
-            <button
-              id="confirmBtn"
-              class="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold"
-              type="button"
-            >
-              Confirm
+            <button id="confirmBtn"
+              class="flex-1 py-4 px-6 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all font-bold shadow-lg shadow-green-600/30 active:scale-[0.98]"
+              type="button">
+              Confirm & Generate
             </button>
           </div>
         </div>
 
-        <div id="successMsg" class="hidden mt-4 success-msg rounded-lg p-4 flex items-center space-x-2 font-semibold text-lg">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          <span>Successfully Submitted Data to Excel Invoice. Check Invoice in Excel.</span>
+        <div id="successMsg"
+          class="hidden mt-6 bg-green-50 border border-green-200 text-green-800 rounded-2xl p-6 flex items-center gap-4 font-bold shadow-sm">
+          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span>Successfully Submitted Data to Excel Invoice.</span>
         </div>
       </div>
     </div>
-  </div>
+  </main>
+
+  <footer class="text-center mt-auto py-10 border-t border-slate-100 bg-white/50 backdrop-blur-sm">
+    <p class="text-xs text-slate-400 font-medium tracking-wide">
+      &copy; 2026 <span class="text-slate-600 font-bold">Dastelecom</span>. All Rights Reserved.
+    </p>
+  </footer>
 
   <script>
     // DOM elements
-    const invoiceType = document.getElementById("invoiceType"),
-      emiForm = document.getElementById("emiForm"),
+    const emiForm = document.getElementById("emiForm"),
       customerName = document.getElementById("customerName"),
       customerAddress = document.getElementById("customerAddress"),
       customerPhone = document.getElementById("customerPhone"),
@@ -680,16 +620,38 @@
       imei2Hint = document.getElementById("imei2Hint"),
       submitBtn = document.getElementById("submitBtn"),
       successMsg = document.getElementById("successMsg");
-    
+
+    // Invoice Type Selection Logic
+    function selectType(type) {
+      // Reset active states
+      document.querySelectorAll('.type-card').forEach(el => el.classList.remove('active'));
+
+      // Handle selection
+      if (type === 'emi') {
+        document.getElementById('btn-emi').classList.add('active');
+        emiForm.classList.remove('hidden');
+        // Smooth scroll to form
+        setTimeout(() => {
+          emiForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      } else if (type === 'noemi') {
+        document.getElementById('btn-noemi').classList.add('active');
+        window.location.href = "invoice-no-emi.html";
+      } else if (type === 'nongst') {
+        document.getElementById('btn-nongst').classList.add('active');
+        window.location.href = "non-gst-bill.html";
+      }
+    }
+
     // Store all products data
     let productsData = {};
-    
+
     // Function to calculate total payment
     function calculateTotalPayment() {
       const emiAmt = parseFloat(emiAmount.value) || 0;
       const months = parseFloat(emiMonths.value) || 0;
       const downPmt = parseFloat(downPayment.value) || 0;
-      
+
       const total = (emiAmt * months) + downPmt;
       totalPayment.value = total.toFixed(2);
     }
@@ -698,112 +660,125 @@
     emiAmount.addEventListener('input', calculateTotalPayment);
     emiMonths.addEventListener('input', calculateTotalPayment);
     downPayment.addEventListener('input', calculateTotalPayment);
-    
+
     // Fetch products from Firebase when the page loads
     document.addEventListener('DOMContentLoaded', () => {
       loadProducts();
-      
-      // Show/hide form based on invoice type selection
-      invoiceType.addEventListener("change", () => {
-        successMsg.classList.add("hidden");
-        if (invoiceType.value === "emi") {
-          emiForm.classList.remove("hidden");
-        } else if (invoiceType.value === "noemi") {
-          // Redirect to invoice-no-emi.html
-          window.location.href = "invoice-no-emi.html";
-        } else {
-          emiForm.classList.add("hidden");
-        }
-      });
+      // Default state: form hidden (handled by class="hidden")
     });
-    
+
     // Load products from Firebase and populate the brand dropdown
     function loadProducts() {
-      // Using fetch API to get data from Firebase REST API
+      const brandBtn = document.getElementById('brandBtn');
+      const brandList = document.getElementById('brandList');
+      const brandIcon = document.getElementById('brandIcon');
+      const brandPlaceholder = document.getElementById('brandPlaceholder');
+
       fetch('https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app/products.json')
         .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
+          if (!response.ok) throw new Error('Network response was not ok');
           return response.json();
         })
         .then(data => {
           if (!data) {
-            console.log('No products found in the database');
             alert('No products found. Please add products first.');
             return;
           }
-          
-          console.log('Raw products data from Firebase:', data);
-          
-          // Store the data
           productsData = data;
-          
+
           // Extract unique brands
           const brands = new Set();
-          
           Object.entries(productsData).forEach(([key, product]) => {
-            if (product && product.brand) {
-              console.log(`Product ${key} has brand: ${product.brand}`);
-              brands.add(product.brand);
+            if (product && product.brand) brands.add(product.brand);
+          });
+
+          // Clear list
+          brandList.innerHTML = '';
+
+          Array.from(brands).sort().forEach(brand => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+
+            // Logo logic
+            let logoSrc = '';
+            if (brand.toLowerCase() === 'vivo') {
+              logoSrc = 'https://upload.wikimedia.org/wikipedia/commons/1/13/Vivo_logo_2019.svg';
+            } else if (brand.toLowerCase() === 'itel') {
+              logoSrc = 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Itel-mobile-logo-vector.svg';
+            } else if (brand.toLowerCase() === 'lava') {
+              logoSrc = 'https://upload.wikimedia.org/wikipedia/commons/6/63/Lava_International.svg';
+            }
+
+            let content = '';
+            if (logoSrc) {
+              content = `<img src="${logoSrc}" alt="${brand}"><span>${brand}</span>`;
+            } else {
+              content = `<span>${brand}</span>`;
+            }
+
+            item.innerHTML = content;
+
+            item.onclick = () => {
+              mobileBrand.value = brand;
+              brandPlaceholder.textContent = brand;
+              brandPlaceholder.classList.remove('text-slate-500');
+              brandPlaceholder.classList.add('text-slate-900');
+
+              if (logoSrc) {
+                brandIcon.src = logoSrc;
+                brandIcon.classList.remove('hidden');
+              } else {
+                brandIcon.classList.add('hidden');
+              }
+
+              brandList.style.display = 'none';
+
+              // Dispatch change event for dependencies
+              mobileBrand.dispatchEvent(new Event('change'));
+            };
+
+            brandList.appendChild(item);
+          });
+
+          // Dropdown toggle logic
+          brandBtn.onclick = (e) => {
+            e.stopPropagation(); // Prevent closing immediately
+            brandList.style.display = brandList.style.display === 'block' ? 'none' : 'block';
+          };
+
+          // Close on click outside
+          document.addEventListener('click', (e) => {
+            if (!brandBtn.contains(e.target) && !brandList.contains(e.target)) {
+              brandList.style.display = 'none';
             }
           });
-          
-          console.log('Unique brands found:', Array.from(brands));
-          
-          // Populate brand dropdown
-          mobileBrand.innerHTML = '<option disabled selected>Select Mobile Brand</option>';
-          brands.forEach(brand => {
-            const option = document.createElement('option');
-            option.value = brand;
-            option.textContent = brand;
-            mobileBrand.appendChild(option);
-          });
-          
-          // Enable brand selection
-          mobileBrand.disabled = false;
+
         })
         .catch((error) => {
           console.error('Error loading products:', error);
-          alert('Failed to load products from database: ' + error.message);
+          alert('Failed to load products: ' + error.message);
         });
     }
-    
-    // Event listener for brand selection
+
     mobileBrand.addEventListener('change', () => {
       const selectedBrand = mobileBrand.value;
-      console.log("Brand selected:", selectedBrand);
-      
-      // Reset other dropdowns
       mobileModel.innerHTML = '<option disabled selected>Select Mobile Model</option>';
-      ramRomSelect.innerHTML = '<option disabled selected>Select Variant</option>';
-      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
-      
-      // Enable model selection, disable others
+      ramRomSelect.innerHTML = '<option disabled selected>Variant</option>';
+      colorSelect.innerHTML = '<option disabled selected>Color</option>';
       mobileModel.disabled = false;
       ramRomSelect.disabled = true;
       colorSelect.disabled = true;
-      
-      // Reset price fields
       priceInput.value = "";
       priceNoGstInput.value = "";
-      
-      // Call function to populate models
       populateModelDropdown(selectedBrand);
     });
-    
-    // Function to populate model dropdown based on selected brand
+
     function populateModelDropdown(selectedBrand) {
-      // Get unique models for the selected brand
       const models = new Set();
-      
       Object.entries(productsData).forEach(([key, product]) => {
         if (product && product.brand === selectedBrand && product.model) {
-          // Extract base model name by removing RAM+ROM and color info
           let baseModel = product.model;
-          // Remove RAM+ROM patterns like "8+128GB", "12+256GB" etc.
           baseModel = baseModel.replace(/\d+\+\d+GB/g, '').trim();
-          // Remove color names if they exist at the end
           if (product.color && Array.isArray(product.color)) {
             product.color.forEach(color => {
               baseModel = baseModel.replace(new RegExp(color + '$'), '').trim();
@@ -812,13 +787,8 @@
           models.add(baseModel);
         }
       });
-      
-      console.log('Unique models found for', selectedBrand + ':', Array.from(models));
-      
-      // Sort models alphabetically
+
       const sortedModels = Array.from(models).sort();
-      
-      // Populate model dropdown
       mobileModel.innerHTML = '<option disabled selected>Select Mobile Model</option>';
       sortedModels.forEach(model => {
         const option = document.createElement('option');
@@ -827,57 +797,35 @@
         mobileModel.appendChild(option);
       });
     }
-    
-    // Event listener for model selection
+
     mobileModel.addEventListener('change', () => {
       const selectedBrand = mobileBrand.value;
       const selectedModel = mobileModel.value;
       populateRamRomDropdown(selectedBrand, selectedModel);
-      
-      // Reset color dropdown
-      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
-      
-      // Enable RAM+ROM selection, disable color
+      colorSelect.innerHTML = '<option disabled selected>Color</option>';
       ramRomSelect.disabled = false;
       colorSelect.disabled = true;
-      
-      // Reset price fields
       priceInput.value = "";
       priceNoGstInput.value = "";
     });
-    
-    // Function to populate RAM+ROM dropdown based on selected brand and model
+
     function populateRamRomDropdown(selectedBrand, selectedModel) {
-      // Get unique RAM+ROM variants for the selected model
       const variants = new Set();
-      
       Object.entries(productsData).forEach(([key, product]) => {
-        if (product && 
-            product.brand === selectedBrand && 
-            product.model && 
-            product.model.startsWith(selectedModel) &&
-            product.ramrom) {
-          // Add all RAM+ROM variants for this model
+        if (product && product.brand === selectedBrand && product.model && product.model.startsWith(selectedModel) && product.ramrom) {
           product.ramrom.forEach(variant => variants.add(variant));
         }
       });
-      
-      console.log('Unique RAM+ROM variants found for', selectedModel + ':', Array.from(variants));
-      
-      // Sort variants
+
       const sortedVariants = Array.from(variants).sort((a, b) => {
-        // Extract numbers from variants for proper sorting
         const getNumbers = str => str.match(/\d+/g).map(Number);
         const [aRam, aRom] = getNumbers(a);
         const [bRam, bRom] = getNumbers(b);
-        
-        // Sort by RAM first, then ROM
         if (aRam !== bRam) return aRam - bRam;
         return aRom - bRom;
       });
-      
-      // Populate RAM+ROM dropdown
-      ramRomSelect.innerHTML = '<option disabled selected>Select Variant</option>';
+
+      ramRomSelect.innerHTML = '<option disabled selected>Variant</option>';
       sortedVariants.forEach(variant => {
         const option = document.createElement('option');
         option.value = variant;
@@ -885,45 +833,25 @@
         ramRomSelect.appendChild(option);
       });
     }
-    
-    // Event listener for RAM+ROM selection
+
     ramRomSelect.addEventListener('change', () => {
       const selectedBrand = mobileBrand.value;
       const selectedModel = mobileModel.value;
       populateColorDropdown(selectedBrand, selectedModel);
-      
-      // Enable color selection
       colorSelect.disabled = false;
-      
-      // Don't auto-update price - let user enter manually
     });
-    
-    // Function to populate color dropdown based on selected brand and model
+
     function populateColorDropdown(selectedBrand, selectedModel) {
-      // Get unique colors for the selected model and RAM+ROM variant
       const colors = new Set();
       const selectedRamRom = ramRomSelect.value;
-      
       Object.entries(productsData).forEach(([key, product]) => {
-        if (product && 
-            product.brand === selectedBrand && 
-            product.model && 
-            product.model.startsWith(selectedModel) &&
-            product.ramrom && 
-            product.ramrom.includes(selectedRamRom) &&
-            product.color) {
-          // Add all colors for this model variant
+        if (product && product.brand === selectedBrand && product.model && product.model.startsWith(selectedModel) && product.ramrom && product.ramrom.includes(selectedRamRom) && product.color) {
           product.color.forEach(color => colors.add(color));
         }
       });
-      
-      console.log('Unique colors found for', selectedModel, selectedRamRom + ':', Array.from(colors));
-      
-      // Sort colors alphabetically
+
       const sortedColors = Array.from(colors).sort();
-      
-      // Populate color dropdown
-      colorSelect.innerHTML = '<option disabled selected>Select Color</option>';
+      colorSelect.innerHTML = '<option disabled selected>Color</option>';
       sortedColors.forEach(color => {
         const option = document.createElement('option');
         option.value = color;
@@ -931,524 +859,240 @@
         colorSelect.appendChild(option);
       });
     }
-    
-    // Event listener for color selection
+
     colorSelect.addEventListener('change', updatePrice);
-    
-    // Event listener for price input to calculate price without GST
     priceInput.addEventListener('input', updatePrice);
-    
+
     function updatePrice() {
       priceContainer.textContent = "";
-      
-      // Calculate price without GST (remove 18% GST)
       if (!priceInput.value) {
-        // If price with GST is empty, clear price without GST too
         priceNoGstInput.value = "";
         return;
       }
-      
       const priceWithGST = parseFloat(priceInput.value);
       const priceWithoutGST = (priceWithGST / 1.18).toFixed(2);
-      
-      // Update the price without GST field
       priceNoGstInput.value = priceWithoutGST;
     }
 
-    // IMEI validation and locking first 13 digits in IMEI2
     imei1.addEventListener("input", () => {
       imei1.value = imei1.value.replace(/\D/g, "").slice(0, 15);
       if (imei1.value.length === 15) {
         imei2.disabled = false;
-        imei2.classList.remove("bg-gray-100");
+        imei2.classList.remove("cursor-not-allowed", "bg-slate-50");
+        imei2.classList.add("bg-white");
         imei2.required = true;
-        // Set first 13 digits of IMEI2, last 2 digits empty for editing
         imei2.value = imei1.value.slice(0, 13);
         imei2.setSelectionRange(13, 15);
       } else {
         imei2.disabled = true;
         imei2.value = "";
-        imei2.classList.add("bg-gray-100");
+        imei2.classList.add("cursor-not-allowed", "bg-slate-50");
+        imei2.classList.remove("bg-white");
         imei2.required = false;
       }
     });
 
     imei2.addEventListener("keydown", (e) => {
-      const allowedKeys = [
-        "ArrowLeft",
-        "ArrowRight",
-        "Backspace",
-        "Delete",
-        "Tab",
-        "Home",
-        "End",
-      ];
+      const allowedKeys = ["ArrowLeft", "ArrowRight", "Backspace", "Delete", "Tab", "Home", "End"];
       if (allowedKeys.includes(e.key)) return;
-
       const pos = imei2.selectionStart;
-
-      // Prevent editing first 13 digits
       if (pos < 13) {
         e.preventDefault();
         imei2.setSelectionRange(13, 15);
         return;
       }
-
-      // Allow only digits for last two characters
       if (!/[0-9]/.test(e.key)) {
         e.preventDefault();
         return;
       }
-
-      // Prevent input beyond length 15
       if (imei2.value.length >= 15 && imei2.selectionStart === imei2.selectionEnd) {
         e.preventDefault();
       }
     });
 
     imei2.addEventListener("input", () => {
-      let val = imei2.value;
-
-      // Fix first 13 digits locked from IMEI1
-      const fixedPart = imei1.value.slice(0, 13);
-
-      // Extract editable part (last digits typed)
-      let editablePart = val.slice(13);
-
-      // Remove non-digit chars and max 2 digits
-      editablePart = editablePart.replace(/\D/g, "").slice(0, 2);
-
-      // Set imei2 value to fixed + editable only
-      imei2.value = fixedPart + editablePart;
-
-      // Put cursor at end of editable part
-      imei2.setSelectionRange(imei2.value.length, imei2.value.length);
+      if (imei2.value.slice(0, 13) !== imei1.value.slice(0, 13)) {
+        imei2.value = imei1.value.slice(0, 13) + imei2.value.slice(13);
+      }
     });
+
+    // Firebase configuration (retained from original file)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCqZ59jV2VddsOGb5WauMZwcGyvppC_EE",
+      authDomain: "dastelecominvoicegenerator2025.firebaseapp.com",
+      databaseURL: "https://dastelecominvoicegenerator2025-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dastelecominvoicegenerator2025",
+      storageBucket: "dastelecominvoicegenerator2025.firebasestorage.app",
+      messagingSenderId: "729939000410",
+      appId: "1:729939000410:web:1be014fec2b6cd923b6c63",
+      measurementId: "G-X4MJCTSTL2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Preview elements
+    const previewSection = document.getElementById("previewSection");
+    const previewContent = document.getElementById("previewContent");
+    const backBtn = document.getElementById("backBtn");
+    const confirmBtn = document.getElementById("confirmBtn");
 
     submitBtn.addEventListener("click", () => {
-      successMsg.classList.add("hidden");
-      
-      // Validate all required inputs manually since we have some custom behaviors
-      const inputsToCheck = [
-        customerName,
-        customerAddress,
-        customerPhone,
-        mobileBrand,
-        mobileModel,
-        ramRomSelect,
-        colorSelect,
-        emiPartner,
-        downPayment,
-        emiMonths,
-        emiAmount,
-        imei1,
-        imei2,
-      ];
-
-      // Check if all inputs have valid values
-      for (const input of inputsToCheck) {
-        if (!input.checkValidity() || !input.value.trim()) {
-          input.reportValidity();
-          return; // stop on first invalid input
-        }
-      }
-
-      // Extra checks
-      if (imei1.value.length !== 15) {
-        alert("IMEI Number 1 must be exactly 15 digits");
-        imei1.focus();
-        return;
-      }
-      if (imei2.value.length !== 15) {
-        alert("IMEI Number 2 must be exactly 15 digits");
-        imei2.focus();
+      if (!emiForm.checkValidity()) {
+        emiForm.reportValidity();
         return;
       }
 
-      // Show preview instead of submitting directly
-      showPreview();
-    });
-
-    // Function to show preview
-    function showPreview() {
-      // Hide form elements but keep the container visible
-      const formElements = document.getElementById('emiForm').children;
-      for (let i = 0; i < formElements.length; i++) {
-        const element = formElements[i];
-        // Hide all elements except the preview section and success message
-        if (element.id !== 'previewSection' && element.id !== 'successMsg') {
-          element.classList.add('hidden');
+      // Gather data for preview
+      const data = {
+        customer: {
+          name: customerName.value,
+          address: customerAddress.value,
+          phone: customerPhone.value
+        },
+        product: {
+          brand: mobileBrand.value,
+          model: mobileModel.value,
+          variant: ramRomSelect.value,
+          color: colorSelect.value,
+          price: priceInput.value
+        },
+        payment: {
+          partner: document.getElementById("emiPartner").value,
+          downPayment: downPayment.value,
+          months: emiMonths.value,
+          emi: emiAmount.value,
+          total: totalPayment.value
+        },
+        imei: {
+          imei1: imei1.value,
+          imei2: imei2.value
         }
-      }
-      
-      // Show preview section
-      document.getElementById('previewSection').classList.remove('hidden');
-      
-      // Populate preview content
-      populatePreview();
-    }
+      };
 
-    // Function to populate preview content
-    function populatePreview() {
-      const previewContent = document.getElementById('previewContent');
+      // Render Preview
       previewContent.innerHTML = `
-        <div class="space-y-4">
-          <div class="grid grid-cols-1 gap-3">
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Customer Name</div>
-              <div class="text-white font-medium">${customerName.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Customer Address</div>
-              <div class="text-white font-medium">${customerAddress.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Phone Number</div>
-              <div class="text-white font-medium">${customerPhone.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Mobile Brand</div>
-              <div class="text-white font-medium">${mobileBrand.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Mobile Model</div>
-              <div class="text-white font-medium">${mobileModel.value} ${ramRomSelect.value} ${colorSelect.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Price (with GST)</div>
-              <div class="text-white font-medium">₹${priceInput.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Price (without GST)</div>
-              <div class="text-white font-medium">₹${priceNoGstInput.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">EMI Partner</div>
-              <div class="text-white font-medium">${emiPartner.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Down Payment</div>
-              <div class="text-white font-medium">₹${downPayment.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">EMI Months</div>
-              <div class="text-white font-medium">${emiMonths.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">EMI Amount</div>
-              <div class="text-white font-medium">₹${emiAmount.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">Total Payment</div>
-              <div class="text-white font-medium">₹${totalPayment.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">IMEI 1</div>
-              <div class="text-white font-medium">${imei1.value}</div>
-            </div>
-            
-            <div class="bg-slate-800/50 p-3 rounded-lg">
-              <div class="font-medium text-gray-300 text-sm">IMEI 2</div>
-              <div class="text-white font-medium">${imei2.value}</div>
-            </div>
-          </div>
+        <div class="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-white animate-up">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50/50">
+              <tr>
+                <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Section</th>
+                <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Document Details</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              <!-- Customer Section -->
+              <tr>
+                <td class="px-6 py-5 text-xs font-black text-blue-500 bg-blue-50/10 w-1/3 align-top">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    CUSTOMER
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="font-bold text-slate-800 text-lg leading-tight">${data.customer.name}</div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="text-slate-400 font-mono text-xs">TEL:</span>
+                    <span class="text-slate-600 font-bold text-sm">${data.customer.phone}</span>
+                  </div>
+                  <div class="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-slate-500 text-xs leading-relaxed font-medium">
+                    ${data.customer.address}
+                  </div>
+                </td>
+              </tr>
+              <!-- Device Section -->
+              <tr>
+                <td class="px-6 py-5 text-xs font-black text-indigo-500 bg-indigo-50/10 align-top">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                    EQUIPMENT
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span class="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-tighter shadow-sm">${data.product.brand}</span>
+                    <div class="font-black text-slate-800 text-lg tracking-tight">${data.product.model}</div>
+                  </div>
+                  <div class="flex items-center gap-4 text-xs">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-400 font-bold">VARIANT:</span>
+                      <span class="text-slate-700 font-black">${data.product.variant}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                      <span class="text-slate-400 font-bold">COLOR:</span>
+                      <span class="text-slate-700 font-black">${data.product.color}</span>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex items-center justify-between p-3 bg-indigo-50/30 rounded-xl border border-indigo-100/50">
+                    <span class="text-[10px] font-black text-indigo-400 uppercase">Unit Price (GST Inc.)</span>
+                    <span class="text-lg font-black text-indigo-600">₹${data.product.price}</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- Payment Section -->
+              <tr>
+                <td class="px-6 py-5 text-xs font-black text-emerald-500 bg-emerald-50/10 align-top">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    FINANCE
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">${data.payment.partner}</div>
+                    <span class="text-slate-400 font-black text-[10px] uppercase tracking-widest">Financed Plan</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 border border-slate-100 rounded-xl">
+                      <div class="text-[9px] text-slate-400 font-black uppercase mb-1">Down Payment</div>
+                      <div class="text-sm font-black text-slate-700 tracking-tight">₹${data.payment.downPayment}</div>
+                    </div>
+                    <div class="p-3 border border-slate-100 rounded-xl">
+                      <div class="text-[9px] text-slate-400 font-black uppercase mb-1">EMI Schedule</div>
+                      <div class="text-sm font-black text-slate-700 tracking-tight">₹${data.payment.emi} <span class="text-[10px] text-slate-400 font-medium">x ${data.payment.months}M</span></div>
+                    </div>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Total Liability</span>
+                    <span class="text-2xl font-black text-emerald-600 tracking-tighter">₹${data.payment.total}</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- IMEI Section -->
+              <tr>
+                <td class="px-6 py-5 text-xs font-black text-orange-500 bg-orange-50/10 align-top">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                    SECURITY
+                  </div>
+                </td>
+                <td class="px-6 py-5 space-y-3">
+                  <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Primary IMEI</span>
+                    <span class="font-mono text-sm font-black text-slate-700 tracking-[0.1em]">${data.imei.imei1}</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Secondary IMEI</span>
+                    <span class="font-mono text-sm font-black text-slate-700 tracking-[0.1em]">${data.imei.imei2}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       `;
-    }
 
-    // Back button event listener
-    document.getElementById('backBtn').addEventListener('click', function() {
-      // Hide preview section
-      document.getElementById('previewSection').classList.add('hidden');
-      
-      // Show form elements again
-      const formElements = document.getElementById('emiForm').children;
-      for (let i = 0; i < formElements.length; i++) {
-        const element = formElements[i];
-        // Show all elements except the preview section and success message
-        if (element.id !== 'previewSection' && element.id !== 'successMsg') {
-          element.classList.remove('hidden');
-        }
-      }
+      // Show Preview, Hide Form Inputs
+      document.querySelectorAll('#emiForm > div:not(#previewSection):not(#successMsg)').forEach(el => el.classList.add('hidden'));
+      previewSection.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Confirm button event listener
-    document.getElementById('confirmBtn').addEventListener('click', function() {
-      // Submit data to Firebase
-      window.submitForm();
-
-      // Show success message
-      document.getElementById('previewSection').classList.add('hidden');
-      successMsg.classList.remove("hidden");
-      
-      // Show success message briefly, then redirect to main.html
-      setTimeout(() => {
-        // Redirect to main.html
-        window.location.href = "main.html";
-      }, 2000);
-    });
-
-  </script>
-
-  <!-- Voice Command Indicator -->
-  <div id="voiceIndicator" class="fixed bottom-4 right-4 z-50 hidden">
-    <div class="p-3 rounded-full bg-orange-500 animate-pulse">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2A3 3 0 0 0 9 5V11A3 3 0 0 0 15 11V5A3 3 0 0 0 12 2M19 11C19 14.53 16.39 17.44 13 17.93V21H11V17.93C7.61 17.44 5 14.53 5 11H7A5 5 0 0 1 12 16A5 5 0 0 1 17 11Z" />
-      </svg>
-    </div>
-  </div>
-
-  <script>
-    // Set current year automatically
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-
-    // Voice command functionality for invoice type selection
-    document.addEventListener('DOMContentLoaded', function() {
-      let recognition;
-      let isListening = false;
-      const voiceIndicator = document.getElementById('voiceIndicator');
-
-      // Check if browser supports speech recognition
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        // Initialize speech recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;  // Always listening
-        recognition.lang = 'en-US'; // Default language
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 3; // Increase alternatives for better accuracy
-
-        recognition.onstart = function() {
-          isListening = true;
-          console.log('Voice recognition started for invoice selection...');
-          voiceIndicator.classList.remove('hidden');
-        };
-
-        recognition.onresult = function(event) {
-          // Process all results
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              const transcript = event.results[i][0].transcript.toLowerCase().trim();
-              console.log('Voice command received for invoice selection:', transcript);
-              
-              // Check for Cash invoice commands
-              const cashCommands = [
-                'cash',
-                'cash invoice',
-                'invoice cash',
-                'without emi',
-                'no emi'
-              ];
-              
-              // Check for EMI invoice commands
-              const emiCommands = [
-                'emi',
-                'emi invoice',
-                'installment',
-                'installment invoice',
-                'loan'
-              ];
-              
-              let commandRecognized = false;
-              
-              // Check for Cash commands
-              for (const command of cashCommands) {
-                if (transcript.includes(command)) {
-                  commandRecognized = true;
-                  console.log('Recognized Cash invoice command:', command);
-                  // Redirect to invoice-no-emi.html
-                  window.location.href = 'invoice-no-emi.html';
-                  break;
-                }
-              }
-              
-              // Check for EMI commands if Cash not recognized
-              if (!commandRecognized) {
-                for (const command of emiCommands) {
-                  if (transcript.includes(command)) {
-                    commandRecognized = true;
-                    console.log('Recognized EMI invoice command:', command);
-                    // Auto-select EMI option
-                    document.getElementById('invoiceType').value = 'emi';
-                    // Trigger change event
-                    document.getElementById('invoiceType').dispatchEvent(new Event('change'));
-                    break;
-                  }
-                }
-              }
-              
-              if (!commandRecognized) {
-                console.log('Invoice type command not recognized. Try saying "cash" or "emi"');
-              }
-            }
-          }
-        };
-
-        recognition.onerror = function(event) {
-          isListening = false;
-          console.error('Speech recognition error:', event.error);
-          voiceIndicator.classList.add('hidden');
-          
-          // Try switching to Bengali language if English fails
-          if (recognition.lang === 'en-US') {
-            recognition.lang = 'bn-IN';
-            console.log('Switching to Bengali language recognition');
-          } else {
-            recognition.lang = 'en-US'; // Switch back to English
-            console.log('Switching back to English language recognition');
-          }
-          
-          // Restart recognition after error
-          setTimeout(() => {
-            if (!isListening) {
-              try {
-                recognition.start();
-              } catch (e) {
-                console.error('Error restarting recognition:', e);
-              }
-            }
-          }, 3000);
-        };
-
-        recognition.onend = function() {
-          isListening = false;
-          console.log('Speech recognition ended');
-          voiceIndicator.classList.add('hidden');
-          
-          // Restart recognition when it stops
-          setTimeout(() => {
-            if (!isListening) {
-              try {
-                recognition.start();
-              } catch (e) {
-                console.error('Error restarting recognition:', e);
-              }
-            }
-          }, 1500);
-        };
-
-        // Start recognition automatically when page loads
-        // But with a delay to ensure page is fully loaded
-        setTimeout(() => {
-          try {
-            recognition.start();
-            console.log('Voice recognition initialized for invoice selection with language:', recognition.lang);
-            
-            // Announce to user what to say
-            console.log('Say "cash" for Cash invoice or "emi" for EMI invoice');
-            
-            // Speak the prompt automatically when page loads
-            if ('speechSynthesis' in window) {
-              // Wait a bit more for page to fully load
-              setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance('Which invoice cash or emi');
-                utterance.lang = 'en-US';
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                speechSynthesis.speak(utterance);
-              }, 1000);
-            }
-          } catch (error) {
-            console.error('Error starting voice recognition:', error);
-            voiceIndicator.classList.add('hidden');
-          }
-        }, 2000);
-      } else {
-        console.log('Speech recognition not supported in this browser');
-      }
+    backBtn.addEventListener("click", () => {
+      previewSection.classList.add("hidden");
+      document.querySelectorAll('#emiForm > div:not(#previewSection):not(#successMsg)').forEach(el => el.classList.remove('hidden'));
     });
   </script>
-
-  <!-- Firebase Config -->
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js";
-  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-  apiKey: "AIzaSyDCqZ59jV2VddsOGb5WauMZwcGyvppC_EE",
-  authDomain: "dastelecominvoicegenerator2025.firebaseapp.com",
-  databaseURL: "https://dastelecominvoicegenerator2025-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dastelecominvoicegenerator2025",
-  storageBucket: "dastelecominvoicegenerator2025.firebasestorage.app",
-  messagingSenderId: "729939000410",
-  appId: "1:729939000410:web:1be014fec2b6cd923b6c63",
-  measurementId: "G-X4MJCTSTL2"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getDatabase(app);
-
-  // Submit form data to Firebase
-  window.submitForm = function () {
-  const data = {
-    name: document.getElementById("customerName").value,
-    address: document.getElementById("customerAddress").value,
-    phone: document.getElementById("customerPhone").value,
-    brand: document.getElementById("mobileBrand").value,
-    model: document.getElementById("mobileModel").value + " " + document.getElementById("ramRomSelect").value + " " + document.getElementById("colorSelect").value,
-    price_without_gst: document.getElementById("priceNoGstInput").value,
-    emi_partner: document.getElementById("emiPartner").value,
-    down_payment: document.getElementById("downPayment").value,
-    no_of_emis: document.getElementById("emiMonths").value,
-    monthly_emi: document.getElementById("emiAmount").value,
-    imei1: document.getElementById("imei1").value,
-    imei2: document.getElementById("imei2").value
-  };
-
-  // ✅ Write directly to /input
-  const inputRef = ref(db, "input");
-  set(inputRef, data)
-    .then(() => {
-      alert("✅ Data submitted successfully!");
-    })
-    .catch((error) => {
-      alert("❌ Submission failed: " + error);
-    });
-};
-
-  </script>
-
-  <!-- Footer -->
-  <footer class="w-full mt-8 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
-    <div class="text-center py-4">
-      <p class="text-gray-400">
-        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
-      </p>
-    </div>
-  </footer>
-
-  <script>
-    // Set current year automatically
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-  </script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
 </body>
+
 </html>

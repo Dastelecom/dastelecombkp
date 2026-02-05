@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,40 +8,118 @@
   <meta name="theme-color" content="#ffffff">
   <title>Security Code</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      background: #000000;
+      font-family: 'Outfit', sans-serif;
+      background-color: #fafbfc;
+      background-image:
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
+      color: #1e293b;
       min-height: 100vh;
-      color: #ffffff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+    }
+
+    .qr-container {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04);
+      border: 1px solid #f1f5f9;
+      transition: all 0.3s ease;
+    }
+
+    .qr-container:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.05),
+        0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    .back-btn {
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateX(-4px);
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
-  <!-- Background with dotted grid -->
-  <div class="fixed top-0 left-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
 
-  <!-- Powered by TVS Credit Logo at Top Center -->
-  <div class="flex items-center justify-center pt-6">
-    <span class="text-gray-400 mr-2">Powered by</span>
-    <img src="TVS Credit.png" alt="TVS Credit Logo" class="h-8 object-contain">
-  </div>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+
+  <!-- Navigation -->
+  <nav class="absolute top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-10">
+    <a href="main.html"
+      class="flex items-center text-slate-500 hover:text-slate-800 back-btn font-medium group transition-colors">
+      <div
+        class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-3 group-hover:border-slate-300 shadow-sm transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </div>
+      <span>Back to Dashboard</span>
+    </a>
+  </nav>
 
   <!-- Main Content -->
-  <div class="flex-1 flex items-center justify-center px-4 py-8">
-    <!-- Security QR Code without box -->
-    <div class="flex justify-center">
-      <img src="security-Qr_code.jpg" alt="Security QR Code" class="h-64 object-contain">
+  <main class="w-full max-w-md relative z-10 animate-fade-in">
+    <div class="glass-card rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+
+      <!-- Decorative background blur -->
+      <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-blue-400/20 rounded-full blur-3xl pointer-events-none">
+      </div>
+
+      <!-- Header -->
+      <div class="mb-8 relative">
+        <div
+          class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mb-4 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">Security Verification</h1>
+        <p class="text-slate-500 mt-2 text-sm">Scan the QR code below to verify security credentials</p>
+      </div>
+
+      <!-- QR Code -->
+      <div class="flex justify-center mb-8">
+        <div class="qr-container">
+          <img src="security-Qr_code.jpeg" alt="Security QR Code" class="h-48 w-48 object-contain rounded-lg">
+        </div>
+      </div>
+
+      <!-- Partner Logo -->
+      <div class="flex flex-col items-center justify-center pt-6 border-t border-slate-100">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Verified By</span>
+        <img src="TVS Credit.png" alt="TVS Credit Logo"
+          class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity">
+      </div>
+
     </div>
-  </div>
+  </main>
 
   <!-- Footer -->
-  <footer class="w-full mt-auto bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
-    <div class="text-center py-6 border-t border-white/5">
-      <p class="text-gray-400">
-        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
-      </p>
-    </div>
+  <footer class="absolute bottom-0 w-full py-6 text-center">
+    <p class="text-xs text-slate-400 font-medium tracking-wide">
+      &copy; <span id="current-year"></span> <span class="text-slate-600 font-bold">Dastelecom</span> · SECURE SYSTEM
+    </p>
   </footer>
 
   <script>
@@ -48,12 +127,13 @@
     document.getElementById('current-year').textContent = new Date().getFullYear();
   </script>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch((err) => console.log('Service Worker registration failed:', err));
+    }
+  </script>
 </body>
+
 </html>

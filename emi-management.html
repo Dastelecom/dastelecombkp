@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SmartBiller — EMI & Loan Management</title>
+  <title>EMI & Loan Management | Dastelecom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Outfit', 'sans-serif'],
           },
         },
       },
@@ -23,287 +24,376 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    .bank-logo{width:56px;height:56px;object-fit:contain;image-rendering:auto;}
-    .emi-partner img{width:56px !important;height:56px !important;object-fit:contain;image-rendering:auto;}
-    .details-box{display:none;transition:all .25s ease-in-out}
-    .details-box.active{display:table-row;background-color:rgba(31,41,55,.6)}
-    /* pulse/glow when due soon */
-    @keyframes soft-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(245,158,11, 0.0); transform: translateY(0); }
-      50% { box-shadow: 0 0 18px 6px rgba(245,158,11, 0.12); transform: translateY(-2px); }
-      100% { box-shadow: 0 0 0 0 rgba(245,158,11, 0.0); transform: translateY(0); }
+    body {
+      background-color: #fafbfc;
+      background-image:
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
     }
+
+    .bank-logo {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .emi-partner img {
+      width: 48px !important;
+      height: 48px !important;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .details-box {
+      display: none;
+      transition: all .25s ease-in-out
+    }
+
+    .details-box.active {
+      display: table-row;
+      background-color: rgba(248, 250, 252, 0.8)
+    }
+
+    @keyframes soft-pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.0);
+        transform: translateY(0);
+      }
+
+      50% {
+        box-shadow: 0 0 18px 6px rgba(245, 158, 11, 0.12);
+        transform: translateY(-2px);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.0);
+        transform: translateY(0);
+      }
+    }
+
     .pulse-warning {
       animation: soft-pulse 1.8s infinite ease-in-out;
-      border-color: rgba(245,158,11,.6) !important;
+      border-color: rgba(245, 158, 11, .4) !important;
+      background-color: rgba(254, 252, 232, 0.5);
     }
-    
-    /* Premium animations */
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    
+
     .animate-fade-in {
       animation: fadeIn 0.5s ease-out forwards;
     }
-    
-    .animate-fade-in-delay-1 {
-      opacity: 0;
-      animation: fadeIn 0.5s ease-out forwards;
-      animation-delay: 0.1s;
-    }
-    
-    .animate-fade-in-delay-2 {
-      opacity: 0;
-      animation: fadeIn 0.5s ease-out forwards;
-      animation-delay: 0.2s;
-    }
-    
-    .animate-fade-in-delay-3 {
-      opacity: 0;
-      animation: fadeIn 0.5s ease-out forwards;
-      animation-delay: 0.3s;
-    }
-    
-    /* Glass effect */
+
     .glass-effect {
-      background: rgba(17, 24, 39, 0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
     }
-    
-    /* Table row hover effect */
+
     .premium-table-row {
       transition: all 0.2s ease;
     }
-    
+
     .premium-table-row:hover {
-      background-color: rgba(59, 130, 246, 0.1);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      background-color: rgba(255, 255, 255, 0.9);
+      transform: scale(1.002);
+      box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.05);
+      z-index: 10;
     }
 
-    /* Prevent wrapping in EMI column */
     th.emi-col,
-    td.emi-col { white-space: nowrap; }
+    td.emi-col {
+      white-space: nowrap;
+    }
 
-    /* Extra columns (contact, address, loan dates) are hidden by default */
     th.extra-col,
-    td.extra-col { display: none; }
-    /* Show header for extra columns when table has flag */
-    table.show-extra-cols th.extra-col { display: table-cell; }
-    /* Show the extra cells only for the expanded row */
-    tr[data-show-extra="true"] td.extra-col { display: table-cell; }
+    td.extra-col {
+      display: none;
+    }
+
+    table.show-extra-cols th.extra-col {
+      display: table-cell;
+    }
+
+    tr[data-show-extra="true"] td.extra-col {
+      display: table-cell;
+    }
+
+    .card-shadow {
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Custom Input Styles */
+    .input-base {
+      background: white;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+
+    .input-base:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      transform: translateY(-1px);
+    }
   </style>
 </head>
-<body class="bg-[#0f172a] text-gray-100 min-h-screen flex flex-col relative overflow-x-hidden">
+
+<body class="text-slate-800 min-h-screen flex flex-col relative overflow-x-hidden antialiased">
   <!-- Premium Background Effects -->
-  <div class="fixed top-0 left-0 w-full h-full opacity-20 z-0">
-    <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-700/30 via-transparent to-transparent"></div>
-    <div class="absolute bottom-0 right-0 w-3/4 h-3/4 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-800/20 via-transparent to-transparent"></div>
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNhYWFhYWEiIHN0cm9rZS13aWR0aD0iMC4yIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPjwvc3ZnPg==')] opacity-10"></div>
+  <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-100/20 rounded-full blur-3xl"></div>
   </div>
 
-  <header class="w-full bg-gray-800/80 backdrop-blur-md border-b border-gray-700/50 py-4 px-6 mb-4 shadow-lg z-10 sticky top-0">
+  <nav class="w-full bg-white/80 backdrop-blur-md border-b border-slate-100 py-4 px-6 shadow-sm z-50 sticky top-0">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <a href="main.html" class="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        <span>Back to Dashboard</span>
-      </a>
-      <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">EMI MANAGEMENT DASHBOARD</h1>
-      <div class="w-24"></div> <!-- Spacer for centering -->
-    </div>
-  </header>
-
-  <main class="flex-1 flex flex-col items-center py-6 px-4 w-full">
-    <!-- Dealer -->
-    <div class="bg-gray-800/90 shadow-[0_10px_40px_-15px_rgba(59,130,246,0.3)] rounded-2xl p-6 w-full max-w-[1400px] mb-8 backdrop-blur-sm border border-gray-700/50 z-10 relative animate-fade-in">
-      <h1 class="text-2xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 tracking-wide">Dealer Information</h1>
-
-      <div class="w-full flex items-center justify-between gap-3 flex-wrap md:flex-nowrap bg-gray-700/50 p-3 rounded-lg border border-gray-600 mb-6">
-          <div class="flex items-center">
-            <span class="text-gray-400 font-medium">Dealer Name:</span>
-            <span class="font-semibold text-white ml-1">Dastelecom</span>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <span class="text-gray-400 font-medium">Dealer Code:</span>
-            <span id="dealerCode" class="font-semibold text-white ml-1">DLR1023</span>
-            <img src="tick.png" alt="Verified" class="w-5 h-5 ml-1 inline-block">
-          </div>
-
-          <div class="flex items-center">
-            <span class="text-gray-400 font-medium">Contact:</span>
-            <span class="font-semibold text-white ml-1">+91 9831129608</span>
-          </div>
-
-          <div class="flex items-center">
-            <span class="text-gray-400 font-medium">Email:</span>
-            <span class="font-semibold text-white ml-1">rajudas1977bkp@gmail.com</span>
-          </div>
-
-          <div class="flex items-center">
-            <span class="text-gray-400 font-medium">Location:</span>
-            <span class="font-semibold text-white ml-1">Barrackpore, West Bengal</span>
-          </div>
-        </div>
-
-      </div>
-
-      
-
-    <!-- Table -->
-    <div class="bg-gray-800/90 shadow-[0_10px_40px_-15px_rgba(74,222,128,0.2)] rounded-2xl p-6 w-full max-w-[1600px] mb-4 backdrop-blur-sm border border-gray-700/50 z-10 relative animate-fade-in-delay-1">
-      <div class="flex items-center justify-between flex-wrap gap-3 border-b border-gray-700 pb-2">
-        <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 tracking-wide">FINANCE & LOAN MANAGEMENT</h2>
-        <!-- EMI Partner Selection - Redesigned -->
-        <div id="partnerDropdown" class="relative w-full sm:w-72">
-          <button id="partnerDropdownBtn" type="button" class="w-full bg-gray-900 border border-gray-600 text-gray-200 rounded-lg px-4 py-2 flex items-center justify-between gap-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <span class="flex items-center gap-3">
-              <img id="partnerDropdownLogo" src="" alt="" class="w-12 h-12 object-contain hidden">
-              <span id="partnerDropdownLabel" class="text-sm text-gray-300">Select EMI Partner</span>
-            </span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
-          </button>
-          <div id="partnerDropdownMenu" class="absolute right-0 mt-2 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 hidden">
-            <button class="partner-item w-full text-left px-4 py-2 flex items-center gap-3 hover:bg-gray-700" data-partner="IDFC FIRST BANK" data-logo="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg" data-dealer="DLR-IDFC1023">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg" class="w-12 h-12 object-contain" alt="IDFC FIRST BANK">
-              <span class="text-gray-200">IDFC FIRST BANK</span>
-            </button>
-            <button class="partner-item w-full text-left px-4 py-2 flex items-center gap-3 hover:bg-gray-700" data-partner="TVS CREDIT" data-logo="TVS Credit.png" data-dealer="CD40104">
-              <img src="TVS Credit.png" class="w-12 h-12 object-contain" alt="TVS CREDIT">
-              <span class="text-gray-200">TVS CREDIT</span>
-            </button>
-          </div>
-          <!-- Hidden input to store selected partner -->
-          <input type="hidden" id="selectedPartner" value="">
-        </div>
-      </div>
-      <div id="lastUpdate" class="text-gray-400 text-sm mt-2 mb-4 italic">
-        Last update from <span id="lastUpdatePartner">SmartBiller central</span> server: <span id="lastUpdateTime">—</span>
-      </div>
-      <div class="glass-effect border border-gray-600 rounded-xl p-4 mb-4">
-        <div class="flex items-center gap-3 flex-nowrap w-full">
-          <input id="filterGlobal" type="text" placeholder="Search name, phone, loan, product, status" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[220px]">
-          <div class="flex items-center gap-2">
-            <label for="filterFromDate" class="text-xs text-gray-400 h-10 flex items-center px-2">From</label>
-            <input id="filterFromDate" type="date" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
-          </div>
-          <div class="flex items-center gap-2">
-            <label for="filterToDate" class="text-xs text-gray-400 h-10 flex items-center px-2">To</label>
-            <input id="filterToDate" type="date" class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
-          </div>
-          <div class="flex items-center gap-2 ml-auto">
-            <button id="exportPdf" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export to PDF</button>
-            <button id="exportExcel" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export to Excel</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto mb-6">
-        <table class="min-w-full text-center text-gray-200 border border-gray-700 rounded-lg overflow-hidden text-sm shadow-lg">
-          <thead class="bg-gradient-to-r from-gray-700 to-gray-800 text-gray-300 uppercase text-sm">
-            <tr>
-              <th class="py-3 px-4">Loan No.</th>
-              <th class="py-3 px-4">EMI Partner</th>
-              <th class="py-3 px-4">Customer Name</th>
-              <th class="py-3 px-4 extra-col">Customer Contact no.</th>
-              <th class="py-3 px-4 extra-col">Customer Address</th>
-              <th class="py-3 px-4 emi-col whitespace-nowrap">EMI</th>
-              <th class="py-3 px-4">EMI Paid</th>
-              <th class="py-3 px-4">EMI Pending</th>
-              <th class="py-3 px-4">Down Payment</th>
-              <th class="py-3 px-4">Disbursement Amount</th>
-              <th class="py-3 px-4">Product</th>
-              <th class="py-3 px-4">Loan Amount</th>
-              <th class="py-3 px-4 extra-col">Loan Start Date</th>
-              <th class="py-3 px-4 extra-col">Loan End Date</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4">Remarks</th>
-              <th class="py-3 px-4">Verified</th>
-              <th class="py-3 px-4">More Details</th>
-            </tr>
-          </thead>
-          <tbody id="loanTable" class="divide-y divide-gray-700">
-            <!-- sample rows include a data-nextemi attribute (ISO) -->
-            <tr class="premium-table-row" data-partner="IDFC FIRST BANK" data-nextemi="2025-11-22T10:00:00">
-              <td class="py-3 px-4">LN1001</td>
-              <td class="py-3 px-4 emi-partner flex items-center justify-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg" class="bank-logo" alt="IDFC FIRST BANK" title="IDFC FIRST BANK">
-              </td>
-              <td class="py-3 px-4">Rahul Sharma</td>
-              <td class="py-3 px-4 extra-col">+91 9876543210</td>
-              <td class="py-3 px-4 extra-col">Kolkata, WB</td>
-              <td class="py-3 px-4 emi-col whitespace-nowrap">₹ 6,000 × 6</td>
-              <td class="py-3 px-4 font-medium text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">6</td>
-              <td class="py-3 px-4 font-medium text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-300">0</td>
-              <td class="py-3 px-4">₹ 10,000</td>
-              <td class="py-3 px-4">₹ 75,000</td>
-              <td class="py-3 px-4">Samsung A15</td>
-              <td class="py-3 px-4">₹ 85,000</td>
-              <td class="py-3 px-4 extra-col">01 Jun 2025</td>
-              <td class="py-3 px-4 extra-col">30 Nov 2025</td>
-              <td class="py-3 px-4 text-green-400 font-semibold">Active</td>
-              <td class="py-3 px-4">On Time</td>
-              <td class="py-3 px-4 text-green-400 text-lg font-bold"><img src="tick.png" alt="Verified" class="w-6 h-6 inline-block"></td>
-              <td class="py-3 px-4">
-                <button class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs px-3 py-1 rounded-md details-btn shadow-md transition-all duration-300 hover:shadow-lg">More Details</button>
-              </td>
-            </tr>
-
-            <tr class="premium-table-row" data-partner="TVS CREDIT" data-nextemi="2025-11-15T09:00:00">
-              <td class="py-3 px-4">LN1002</td>
-              <td class="py-3 px-4 emi-partner flex items-center justify-center">
-                <img src="TVS Credit.png" class="bank-logo" alt="TVS Credit" style="width:40px;height:40px;" title="TVS CREDIT">
-              </td>
-              <td class="py-3 px-4">Priya Das</td>
-              <td class="py-3 px-4 extra-col">+91 9123456789</td>
-              <td class="py-3 px-4 extra-col">Howrah, WB</td>
-              <td class="py-3 px-4 emi-col whitespace-nowrap">₹ 5,000 × 8</td>
-              <td class="py-3 px-4 font-medium text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">5</td>
-              <td class="py-3 px-4 font-medium text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-300">3</td>
-              <td class="py-3 px-4">₹ 8,000</td>
-              <td class="py-3 px-4">₹ 50,000</td>
-              <td class="py-3 px-4">Realme 12 Pro</td>
-              <td class="py-3 px-4">₹ 62,000</td>
-              <td class="py-3 px-4 extra-col">15 Apr 2025</td>
-              <td class="py-3 px-4 extra-col">15 Dec 2025</td>
-              <td class="py-3 px-4 text-yellow-400 font-semibold">Pending</td>
-              <td class="py-3 px-4">Next EMI Due 15th Nov 2025</td>
-              <td class="py-3 px-4 text-yellow-400 text-lg font-bold">—</td>
-              <td class="py-3 px-4">
-                <button class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs px-3 py-1 rounded-md details-btn shadow-md transition-all duration-300 hover:shadow-lg">More Details</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Next EMI Reminder -->
-      <div id="emiReminder" class="glass-effect border border-gray-600 rounded-xl p-4 flex items-center justify-between animate-fade-in-delay-3">
-        <div class="flex items-center gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      <a href="main.html"
+        class="group flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium">
+        <div
+          class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-slate-300 transition-all shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span id="emiMessage" class="text-gray-200 font-medium">Next EMI due on <span class="text-yellow-400">—</span></span>
         </div>
-        <div class="flex items-center gap-3">
-          <button id="viewSchedule" class="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black text-xs font-semibold px-4 py-2 rounded-md shadow-md transition-all duration-300 hover:shadow-lg">View Schedule</button>
+        <span>Dashboard</span>
+      </a>
+      <h1 class="text-lg font-black text-slate-800 tracking-tighter uppercase">EMI Dashboard</h1>
+      <div class="w-32"></div>
+    </div>
+  </nav>
+
+  <main class="flex-grow p-4 md:p-8 max-w-[1600px] mx-auto w-full z-10 relative">
+    <!-- Dealer Info Card -->
+    <div class="glass-effect rounded-[2rem] p-8 card-shadow mb-8 animate-fade-in">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-1">Dealer Information</h2>
+          <p class="text-slate-500 font-medium">Verified Merchant Profile</p>
+        </div>
+        <div class="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100">
+          <span class="text-xs font-black text-blue-400 uppercase tracking-widest leading-none">Dealer Code</span>
+          <span id="dealerCode" class="text-lg font-black text-blue-600 leading-none">DLR1023</span>
+          <img src="tick.png" alt="Verified" class="w-5 h-5 ml-1">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="p-4 bg-white/50 rounded-2xl border border-slate-100">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Merchant Name</span>
+          <span class="font-bold text-slate-700">Dastelecom</span>
+        </div>
+        <div class="p-4 bg-white/50 rounded-2xl border border-slate-100">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Contact
+            Details</span>
+          <span class="font-bold text-slate-700">+91 9831129608</span>
+        </div>
+        <div class="p-4 bg-white/50 rounded-2xl border border-slate-100 lg:col-span-2">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Registered
+            Address</span>
+          <span class="font-bold text-slate-700">Barrackpore, West Bengal, India</span>
         </div>
       </div>
     </div>
 
-    <!-- Summary / placeholders -->
-    <div class="w-full max-w-7xl mt-4"></div>
+    <!-- Main Management Table Card -->
+    <div class="glass-effect rounded-[2.5rem] p-1 card-shadow animate-fade-in" style="animation-delay: 0.1s;">
+      <div class="bg-white rounded-[2.3rem] p-6 md:p-8">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-8 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl font-black text-slate-800 tracking-tight uppercase mb-1">Finance Management</h2>
+            <div id="lastUpdate" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Last synced with <span id="lastUpdatePartner" class="text-blue-500">SmartBiller central</span>: <span
+                id="lastUpdateTime" class="text-slate-500 font-bold ml-1">—</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <!-- EMI Partner Dropdown -->
+            <div id="partnerDropdown" class="relative w-full sm:w-64">
+              <button id="partnerDropdownBtn" type="button"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3 font-bold text-sm hover:border-slate-300 transition-all focus:ring-4 focus:ring-blue-500/10">
+                <span class="flex items-center gap-2">
+                  <img id="partnerDropdownLogo" src="" alt="" class="w-6 h-6 object-contain hidden">
+                  <span id="partnerDropdownLabel">Select Partner</span>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+              <div id="partnerDropdownMenu"
+                class="absolute left-0 mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden hidden animate-fade-in">
+                <button
+                  class="partner-item w-full text-left px-5 py-4 flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50"
+                  data-partner="IDFC FIRST BANK"
+                  data-logo="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg"
+                  data-dealer="DLR-IDFC1023">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg"
+                    class="w-8 h-8 object-contain" alt="IDFC">
+                  <span class="font-bold text-slate-700">IDFC FIRST BANK</span>
+                </button>
+                <button class="partner-item w-full text-left px-5 py-4 flex items-center gap-3 hover:bg-slate-50"
+                  data-partner="TVS CREDIT" data-logo="TVS Credit.png" data-dealer="CD40104">
+                  <img src="TVS Credit.png" class="w-8 h-8 object-contain" alt="TVS">
+                  <span class="font-bold text-slate-700">TVS CREDIT</span>
+                </button>
+              </div>
+              <input type="hidden" id="selectedPartner" value="">
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="exportPdf"
+                class="px-5 py-3 bg-rose-50 text-rose-600 rounded-xl font-bold text-sm hover:bg-rose-600 hover:text-white transition-all shadow-sm">Export
+                PDF</button>
+              <button id="exportExcel"
+                class="px-5 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-sm hover:bg-emerald-600 hover:text-white transition-all shadow-sm">Export
+                Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 py-6 border-b border-slate-50">
+          <div class="lg:col-span-6 relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input id="filterGlobal" type="text" placeholder="Search customer, loan, product, status..."
+              class="input-base w-full pl-11 pr-4 py-3 rounded-xl text-sm font-medium">
+          </div>
+          <div class="lg:col-span-3 flex items-center gap-2">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">From</span>
+            <input id="filterFromDate" type="date" class="input-base flex-1 px-4 py-3 rounded-xl text-sm font-medium">
+          </div>
+          <div class="lg:col-span-3 flex items-center gap-2">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">To</span>
+            <input id="filterToDate" type="date" class="input-base flex-1 px-4 py-3 rounded-xl text-sm font-medium">
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="filterFromDate" class="text-xs text-gray-400 h-10 flex items-center px-2">From</label>
+          <input id="filterFromDate" type="date"
+            class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="filterToDate" class="text-xs text-gray-400 h-10 flex items-center px-2">To</label>
+          <input id="filterToDate" type="date"
+            class="bg-gray-900 border border-gray-600 rounded-md px-3 h-10 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
+        </div>
+        <div class="flex items-center gap-2 ml-auto">
+          <button id="exportPdf"
+            class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export
+            to PDF</button>
+          <button id="exportExcel"
+            class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-sm px-4 h-10 rounded-md whitespace-nowrap">Export
+            to Excel</button>
+        </div>
+      </div>
+    </div>
+
+        <div class="overflow-x-auto mt-6">
+          <table class="w-full text-center border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50/50">
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Loan No.</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">EMI Partner</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Customer Name</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 extra-col text-left">Contact & Address</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 emi-col">EMI Plan</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Paid</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Pending</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Product</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Loan Amount</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Status</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Remarks</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Verified</th>
+                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="loanTable" class="divide-y divide-slate-50">
+              <tr class="premium-table-row group bg-white" data-partner="IDFC FIRST BANK" data-nextemi="2025-11-22T10:00:00">
+                <td class="py-5 px-4 font-black text-slate-400">LN1001</td>
+                <td class="py-5 px-4">
+                  <div class="flex items-center justify-center emi-partner">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg" class="bank-logo" alt="IDFC">
+                  </div>
+                </td>
+                <td class="py-5 px-4 font-bold text-slate-700">Rahul Sharma</td>
+                <td class="py-5 px-4 extra-col text-left">
+                  <div class="text-xs font-bold text-slate-600">+91 9876543210</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Kolkata, WB</div>
+                </td>
+                <td class="py-5 px-4 emi-col">
+                  <span class="font-black text-slate-700 tracking-tight">₹ 6,000</span>
+                  <span class="text-[10px] text-slate-400 font-bold ml-1">× 6</span>
+                </td>
+                <td class="py-5 px-4">
+                  <span class="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg font-black text-[10px]">6</span>
+                </td>
+                <td class="py-5 px-4">
+                  <span class="px-2 py-1 bg-slate-50 text-slate-400 rounded-lg font-black text-[10px]">0</span>
+                </td>
+                <td class="py-5 px-4 font-bold text-slate-600">Samsung A15</td>
+                <td class="py-5 px-4 font-black text-slate-800 tracking-tighter">₹ 85,000</td>
+                <td class="py-5 px-4">
+                  <span class="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold shadow-lg shadow-green-500/20">Active</span>
+                </td>
+                <td class="py-5 px-4 text-xs font-bold text-slate-500">
+                  <div class="flex items-center justify-center gap-2">
+                    On Time <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                  </div>
+                </td>
+                <td class="py-5 px-4">
+                  <img src="tick.png" alt="Verified" class="w-6 h-6 mx-auto">
+                </td>
+                <td class="py-5 px-4">
+                  <button class="details-btn px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg active:scale-95">Details</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Next EMI Reminder -->
+        <div id="emiReminder" class="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Upcoming EMI Alert</div>
+              <div id="emiMessage" class="text-slate-700 font-bold">Checking for upcoming dues...</div>
+            </div>
+          </div>
+          <button id="viewSchedule" class="px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95">View Schedule</button>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-gray-400 text-sm py-4 w-full text-center border-t border-gray-700">
-    © 2025 <span class="text-blue-400 font-semibold">SmartBiller</span>. All Rights Reserved.
+  <footer class="py-10 text-center text-slate-400 text-xs font-medium border-t border-slate-100 bg-white/50 backdrop-blur-md">
+    &copy; 2026 <span class="text-slate-900 font-bold">Dastelecom</span>. All Rights Reserved.
   </footer>
+
 
   <!-- SCRIPT -->
   <script>
@@ -335,14 +425,14 @@
     const filterReset = document.getElementById('filterReset');
 
     // initial last update
-    function displayPartnerName(partner){
-      if(!partner) return 'SmartBiller central';
+    function displayPartnerName(partner) {
+      if (!partner) return 'SmartBiller central';
       const s = String(partner).toUpperCase();
-      if(s.includes('IDFC')) return 'IDFC BANK';
-      if(s.includes('TVS')) return 'TVS CREDIT';
+      if (s.includes('IDFC')) return 'IDFC BANK';
+      if (s.includes('TVS')) return 'TVS CREDIT';
       return partner;
     }
-    function setLastUpdate(partner){
+    function setLastUpdate(partner) {
       const now = new Date();
       if (lastUpdateTime) lastUpdateTime.textContent = now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
       if (lastUpdatePartner) lastUpdatePartner.textContent = displayPartnerName(partner);
@@ -350,26 +440,26 @@
     setLastUpdate();
 
     // compute nearest upcoming EMI (optionally filtered by partner)
-    function getNearestUpcomingEMI(filterPartner){
+    function getNearestUpcomingEMI(filterPartner) {
       const now = new Date();
       let nearest = null;
       loanRows.forEach(row => {
         const partner = row.getAttribute('data-partner') || '';
-        if(filterPartner && !partner.includes(filterPartner)) return;
+        if (filterPartner && !partner.includes(filterPartner)) return;
         const iso = row.getAttribute('data-nextemi');
-        if(!iso) return;
+        if (!iso) return;
         const dt = new Date(iso);
-        if(dt >= now){
-          if(!nearest || dt < new Date(nearest.date)) nearest = { date: iso, row, partner, name: row.cells[2].textContent.trim() };
+        if (dt >= now) {
+          if (!nearest || dt < new Date(nearest.date)) nearest = { date: iso, row, partner, name: row.cells[2].textContent.trim() };
         }
       });
       return nearest;
     }
 
     // update reminder display; apply pulse if within 3 days
-    function updateReminder(filterPartner){
+    function updateReminder(filterPartner) {
       const nearest = getNearestUpcomingEMI(filterPartner);
-      if(!nearest){
+      if (!nearest) {
         emiMessage.innerHTML = `No upcoming EMI found for <span class="text-blue-400 font-semibold">${filterPartner || 'all partners'}</span>.`;
         emiReminder.classList.remove('pulse-warning');
         return;
@@ -377,12 +467,12 @@
       const due = new Date(nearest.date);
       const now = new Date();
       // difference in days (whole)
-      const msPerDay = 24*60*60*1000;
+      const msPerDay = 24 * 60 * 60 * 1000;
       const diffDays = Math.ceil((due - now) / msPerDay);
       const formatted = due.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
       emiMessage.innerHTML = `Next EMI due on <span class="text-yellow-400">${formatted}</span> for <span class="text-blue-400">${nearest.name}</span> (${nearest.partner})`;
       // pulse if due in <=3 days
-      if(diffDays <= 3){
+      if (diffDays <= 3) {
         emiReminder.classList.add('pulse-warning');
       } else {
         emiReminder.classList.remove('pulse-warning');
@@ -390,17 +480,17 @@
     }
 
     // ===== Filters & Search helpers =====
-    function sanitize(str){ return (str || '').toString().trim().toLowerCase(); }
-    function digits(str){ return (str || '').toString().replace(/\D+/g, ''); }
+    function sanitize(str) { return (str || '').toString().trim().toLowerCase(); }
+    function digits(str) { return (str || '').toString().replace(/\D+/g, ''); }
 
     // Header index helpers
-    function getHeaderIndex(label){
+    function getHeaderIndex(label) {
       const header = document.querySelector('table thead tr');
-      if(!header) return -1;
+      if (!header) return -1;
       let idx = -1;
-      header.querySelectorAll('th').forEach((th, i)=>{
+      header.querySelectorAll('th').forEach((th, i) => {
         const t = th.textContent.trim().toLowerCase();
-        if(t === label.toLowerCase()) idx = i;
+        if (t === label.toLowerCase()) idx = i;
       });
       return idx;
     }
@@ -413,8 +503,8 @@
     const IDX_VERIFIED = getHeaderIndex('verified');
 
     // Extract phone numbers from the Contact column into data attributes on the main row
-    function annotatePhones(){
-      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row)=>{
+    function annotatePhones() {
+      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row) => {
         if (IDX_CONTACT >= 0) {
           const cell = row.cells[IDX_CONTACT];
           const txt = cell ? cell.textContent : '';
@@ -423,7 +513,7 @@
       });
     }
 
-    function applyFilters(){
+    function applyFilters() {
       const qGlobal = sanitize(filterGlobal && filterGlobal.value);
       const qGlobalDigits = digits(filterGlobal && filterGlobal.value);
       const qName = sanitize(filterName && filterName.value);
@@ -436,7 +526,7 @@
       const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
       const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
 
-      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row)=>{
+      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row) => {
         const cells = row.cells;
         const loanNo = sanitize((IDX_LOAN >= 0 && cells[IDX_LOAN]) ? cells[IDX_LOAN].textContent : '');
         const customer = sanitize((IDX_CUSTOMER >= 0 && cells[IDX_CUSTOMER]) ? cells[IDX_CUSTOMER].textContent : '');
@@ -448,7 +538,7 @@
         const nextDt = nextIso ? new Date(nextIso) : null;
 
         let ok = true;
-        if(qGlobal){
+        if (qGlobal) {
           const globalMatch = (
             customer.includes(qGlobal) ||
             loanNo.includes(qGlobal) ||
@@ -458,11 +548,11 @@
           );
           ok = ok && globalMatch;
         }
-        if(qName) ok = ok && customer.includes(qName);
-        if(qLoan) ok = ok && loanNo.includes(qLoan);
-        if(qProduct) ok = ok && product.includes(qProduct);
-        if(qStatus) ok = ok && status === qStatus;
-        if(qPhone) ok = ok && phone.includes(qPhone);
+        if (qName) ok = ok && customer.includes(qName);
+        if (qLoan) ok = ok && loanNo.includes(qLoan);
+        if (qProduct) ok = ok && product.includes(qProduct);
+        if (qStatus) ok = ok && status === qStatus;
+        if (qPhone) ok = ok && phone.includes(qPhone);
         if (fromDate || toDate) {
           let inRange = !!nextDt;
           if (inRange && fromDate) inRange = inRange && (nextDt >= fromDate);
@@ -472,17 +562,17 @@
 
         row.style.display = ok ? '' : 'none';
         const details = row.nextElementSibling;
-        if(details && details.classList.contains('details-box')){
+        if (details && details.classList.contains('details-box')) {
           details.style.display = ok && details.classList.contains('active') ? 'table-row' : 'none';
         }
       });
       updateExtraColsHeader();
     }
 
-    function updateExtraColsHeader(){
+    function updateExtraColsHeader() {
       const tbl = document.querySelector('#loanTable')?.closest('table');
       const anyExpanded = document.querySelector('#loanTable tr.premium-table-row[data-show-extra="true"]') !== null;
-      if(tbl){ tbl.classList.toggle('show-extra-cols', anyExpanded); }
+      if (tbl) { tbl.classList.toggle('show-extra-cols', anyExpanded); }
     }
 
     // Clear all selected states
@@ -504,23 +594,23 @@
 
         // Clear previous selection
         clearSelectedPartners();
-        
+
         // Set new selection
         const radioBtn = option.querySelector('.partner-radio-dot');
         radioBtn.classList.remove('hidden');
         option.querySelector('.bg-gradient-to-r').classList.remove('border-gray-600');
         option.querySelector('.bg-gradient-to-r').classList.add('border-blue-500');
-        
+
         // Store selected partner
         selectedPartnerInput.value = partner;
         dealerCode.textContent = dealer;
 
         // Update table partner logos & text
-        document.querySelectorAll('.emi-partner').forEach((el)=> {
+        document.querySelectorAll('.emi-partner').forEach((el) => {
           const img = el.querySelector('img');
           const span = el.querySelector('span');
-          if(img) img.src = logo;
-          if(span) span.textContent = partner;
+          if (img) img.src = logo;
+          if (span) span.textContent = partner;
         });
 
         // Update last update time and reminder
@@ -540,7 +630,7 @@
         selectedPartnerInput.value = partner || '';
         if (partner) {
           if (dealerCode) dealerCode.textContent = dealer || defaultDealerCode;
-          document.querySelectorAll('.emi-partner').forEach((el)=> {
+          document.querySelectorAll('.emi-partner').forEach((el) => {
             const img = el.querySelector('img');
             const span = el.querySelector('span');
             if (img && logo) { img.src = logo; img.alt = partner; img.title = partner; }
@@ -579,7 +669,7 @@
           partnerDropdownLogo.classList.remove('hidden');
         }
 
-        document.querySelectorAll('.emi-partner').forEach((el)=> {
+        document.querySelectorAll('.emi-partner').forEach((el) => {
           const img = el.querySelector('img');
           const span = el.querySelector('span');
           if (img && logo) { img.src = logo; img.alt = partner; img.title = partner; }
@@ -615,19 +705,19 @@
     // Initialize Filters & Search
     annotatePhones();
     applyFilters();
-    [filterGlobal, filterName, filterPhone, filterLoan, filterProduct].forEach(inp=>{
-      if(inp){ inp.addEventListener('input', applyFilters); }
+    [filterGlobal, filterName, filterPhone, filterLoan, filterProduct].forEach(inp => {
+      if (inp) { inp.addEventListener('input', applyFilters); }
     });
-    [filterFromDate, filterToDate].forEach(inp=>{ if(inp){ inp.addEventListener('change', applyFilters); }});
-    if(filterStatus){ filterStatus.addEventListener('change', applyFilters); }
-    if(filterReset){
-      filterReset.addEventListener('click', ()=>{
-        if(filterGlobal) filterGlobal.value = '';
-        if(filterName) filterName.value = '';
-        if(filterPhone) filterPhone.value = '';
-        if(filterLoan) filterLoan.value = '';
-        if(filterProduct) filterProduct.value = '';
-        if(filterStatus) filterStatus.value = '';
+    [filterFromDate, filterToDate].forEach(inp => { if (inp) { inp.addEventListener('change', applyFilters); } });
+    if (filterStatus) { filterStatus.addEventListener('change', applyFilters); }
+    if (filterReset) {
+      filterReset.addEventListener('click', () => {
+        if (filterGlobal) filterGlobal.value = '';
+        if (filterName) filterName.value = '';
+        if (filterPhone) filterPhone.value = '';
+        if (filterLoan) filterLoan.value = '';
+        if (filterProduct) filterProduct.value = '';
+        if (filterStatus) filterStatus.value = '';
         applyFilters();
       });
     }
@@ -646,15 +736,15 @@
     });
 
     // More Details toggle
-    document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row)=>{
+    document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row) => {
       const btn = row.querySelector('.details-btn');
-      if(!btn) return;
-      btn.addEventListener('click', ()=>{
+      if (!btn) return;
+      btn.addEventListener('click', () => {
         const expanded = row.getAttribute('data-show-extra') === 'true';
-        if(expanded){
+        if (expanded) {
           row.removeAttribute('data-show-extra');
         } else {
-          row.setAttribute('data-show-extra','true');
+          row.setAttribute('data-show-extra', 'true');
         }
         updateExtraColsHeader();
         btn.textContent = row.getAttribute('data-show-extra') === 'true' ? 'Hide Details' : 'More Details';
@@ -662,20 +752,20 @@
     });
 
     // Automatic color indicators for Remarks based on next EMI
-    function updateRowIndicators(){
+    function updateRowIndicators() {
       const now = new Date();
-      const msPerDay = 24*60*60*1000;
-      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row)=>{
+      const msPerDay = 24 * 60 * 60 * 1000;
+      document.querySelectorAll('#loanTable tr.premium-table-row').forEach((row) => {
         const iso = row.getAttribute('data-nextemi');
-        if(!iso || IDX_REMARKS < 0) return;
+        if (!iso || IDX_REMARKS < 0) return;
         const due = new Date(iso);
         const diffDays = Math.ceil((due - now) / msPerDay);
         let text = '';
         let colorCls = '';
-        if(diffDays < 0){
+        if (diffDays < 0) {
           text = 'EMI Overdue';
           colorCls = 'bg-red-500';
-        } else if(diffDays <= 3){
+        } else if (diffDays <= 3) {
           text = 'EMI Due within 3 Days';
           colorCls = 'bg-orange-400';
         } else {
@@ -683,28 +773,28 @@
           colorCls = 'bg-green-500';
         }
         const cell = row.cells[IDX_REMARKS];
-        if(cell){
+        if (cell) {
           cell.innerHTML = `${text} <span class="inline-block w-2.5 h-2.5 rounded-full ${colorCls} ml-2 align-middle"></span>`;
         }
       });
     }
 
     // Optional: View Schedule button hookup (scroll to table)
-    document.getElementById('viewSchedule').addEventListener('click', ()=> {
-      document.querySelector('table').scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('viewSchedule').addEventListener('click', () => {
+      document.querySelector('table').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
     // ===== Export handlers =====
-    function getExportData(){
+    function getExportData() {
       const table = document.querySelector('#loanTable')?.closest('table');
-      if(!table) return { headers: [], rows: [], headerIndices: [], rowNodes: [] };
+      if (!table) return { headers: [], rows: [], headerIndices: [], rowNodes: [] };
       const thAll = Array.from(table.querySelectorAll('thead th'));
       // Include all columns except 'More Details'
       const includeIdx = thAll
-        .map((th,i)=>({ i, label: (th.textContent||'').trim() }))
+        .map((th, i) => ({ i, label: (th.textContent || '').trim() }))
         .filter(o => o.label.toLowerCase() !== 'more details')
         .map(o => o.i);
-      const headers = includeIdx.map(i => (thAll[i].textContent||'').trim());
+      const headers = includeIdx.map(i => (thAll[i].textContent || '').trim());
       const rowNodes = [];
       const rows = [];
       document.querySelectorAll('#loanTable tr.premium-table-row').forEach(row => {
@@ -714,7 +804,7 @@
         const values = includeIdx.map(idx => {
           const td = tds[idx];
           if (!td) return '';
-          let txt = (td.textContent || '').trim().replace(/\s+/g,' ');
+          let txt = (td.textContent || '').trim().replace(/\s+/g, ' ');
           if (!txt) {
             const img = td.querySelector('img');
             if (img) txt = (img.alt || img.title || '').trim();
@@ -726,7 +816,7 @@
       return { headers, rows, headerIndices: includeIdx, rowNodes };
     }
 
-    async function exportToPDF(){
+    async function exportToPDF() {
       const meta = getExportData();
       const { headers, rows, headerIndices, rowNodes } = meta;
       if (!headers.length) return;
@@ -745,7 +835,7 @@
       const verifiedDomIdx = verifiedColIdx >= 0 ? headerIndices[verifiedColIdx] : -1;
 
       // Preload images to data URLs
-      async function loadImageToDataURL(src){
+      async function loadImageToDataURL(src) {
         return new Promise((resolve) => {
           try {
             const img = new Image();
@@ -759,17 +849,17 @@
                 ctx.drawImage(img, 0, 0);
                 const dataUrl = canvas.toDataURL('image/png');
                 resolve(dataUrl);
-              } catch(err){ resolve(null); }
+              } catch (err) { resolve(null); }
             };
             img.onerror = () => resolve(null);
             img.src = src;
-          } catch(e) { resolve(null); }
+          } catch (e) { resolve(null); }
         });
       }
 
       const imageMap = {};
       const toLoad = new Set();
-      rowNodes.forEach((row)=>{
+      rowNodes.forEach((row) => {
         if (emiDomIdx >= 0) {
           const td = row.cells[emiDomIdx];
           const img = td && td.querySelector('img');
@@ -781,26 +871,26 @@
           if (img && img.src) toLoad.add(img.src);
         }
       });
-      await Promise.all(Array.from(toLoad).map(async (src)=>{
+      await Promise.all(Array.from(toLoad).map(async (src) => {
         imageMap[src] = await loadImageToDataURL(src);
       }));
 
       // Draw header/footer on each page
       const topBarH = 56; // header bar height for centered title
-      const drawPageFrame = ()=>{
+      const drawPageFrame = () => {
         // Header banner with centered title
-        doc.setFillColor(30,58,138); // indigo-900
+        doc.setFillColor(30, 58, 138); // indigo-900
         doc.rect(0, 0, pageWidth, topBarH, 'F');
-        doc.setTextColor(255,255,255);
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(14);
-        doc.text(title, pageWidth/2, 34, { align: 'center' });
+        doc.text(title, pageWidth / 2, 34, { align: 'center' });
 
         // Footer text (no background, black, bold, centered)
-        doc.setTextColor(0,0,0);
-        try { doc.setFont('helvetica', 'bold'); } catch(e) {}
+        doc.setTextColor(0, 0, 0);
+        try { doc.setFont('helvetica', 'bold'); } catch (e) { }
         doc.setFontSize(10);
-        doc.text(footLine1, pageWidth/2, pageHeight - 28, { align: 'center', maxWidth: pageWidth - 80 });
-        doc.text(footLine2, pageWidth/2, pageHeight - 12, { align: 'center', maxWidth: pageWidth - 80 });
+        doc.text(footLine1, pageWidth / 2, pageHeight - 28, { align: 'center', maxWidth: pageWidth - 80 });
+        doc.text(footLine2, pageWidth / 2, pageHeight - 12, { align: 'center', maxWidth: pageWidth - 80 });
       };
 
       // Build table with colored theme and custom cell drawings
@@ -812,20 +902,20 @@
           head: [headers],
           body: bodyForPdf,
           theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [15,23,42] }, // slate-900 text
-          headStyles: { fillColor: [37,99,235], textColor: 255, fontStyle: 'bold' }, // blue-600
-          alternateRowStyles: { fillColor: [240,249,255] }, // sky-50
-          tableLineColor: [203,213,225], // slate-300 grid
+          styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [15, 23, 42] }, // slate-900 text
+          headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' }, // blue-600
+          alternateRowStyles: { fillColor: [240, 249, 255] }, // sky-50
+          tableLineColor: [203, 213, 225], // slate-300 grid
           tableLineWidth: 0.5,
           margin: { top: topBarH + 12, bottom: 40, left: 10, right: 10 },
           didDrawPage: drawPageFrame,
-          columnStyles: (function(){
+          columnStyles: (function () {
             const cs = {};
             if (emiColIdx >= 0) cs[emiColIdx] = { cellWidth: 110, halign: 'center', minCellHeight: 32 };
             if (verifiedColIdx >= 0) cs[verifiedColIdx] = { halign: 'center', cellWidth: 60, minCellHeight: 20 };
             return cs;
           })(),
-          didDrawCell: function(data) {
+          didDrawCell: function (data) {
             if (data.section !== 'body') return;
             const rowIdx = data.row.index;
             const colIdx = data.column.index;
@@ -841,9 +931,9 @@
                 const maxH = Math.min(data.cell.height - 8, 28);
                 const w = maxW;
                 const h = maxH;
-                const x = data.cell.x + (data.cell.width - w)/2;
-                const y = data.cell.y + (data.cell.height - h)/2;
-                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch(e) {}
+                const x = data.cell.x + (data.cell.width - w) / 2;
+                const y = data.cell.y + (data.cell.height - h) / 2;
+                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch (e) { }
               }
             }
             // Verified tick image
@@ -854,26 +944,26 @@
                 const imgData = imageMap[img.src];
                 const h = Math.min(data.cell.height - 6, 16);
                 const w = h;
-                const x = data.cell.x + (data.cell.width - w)/2;
-                const y = data.cell.y + (data.cell.height - h)/2;
-                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch(e) {}
+                const x = data.cell.x + (data.cell.width - w) / 2;
+                const y = data.cell.y + (data.cell.height - h) / 2;
+                try { doc.addImage(imgData, 'PNG', x, y, w, h); } catch (e) { }
               }
             }
           }
         });
       }
 
-      const fname = `EMI_Management_${new Date().toISOString().slice(0,10)}.pdf`;
+      const fname = `EMI_Management_${new Date().toISOString().slice(0, 10)}.pdf`;
       doc.save(fname);
     }
 
-    function exportToExcel(){
+    function exportToExcel() {
       const { headers, rows } = getExportData();
       const aoa = [headers, ...rows];
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Loans');
-      const fname = `EMI_Management_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const fname = `EMI_Management_${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(wb, fname);
     }
 
@@ -883,4 +973,5 @@
     if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
   </script>
 </body>
+
 </html>

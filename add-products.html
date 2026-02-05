@@ -1,187 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="/manifest.php">
   <meta name="theme-color" content="#ffffff">
   <title>Add Product</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
     body {
-      background-color: #000000;
+      font-family: 'Outfit', sans-serif;
+      background-color: #fafbfc;
+      background-image:
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
+      color: #1e293b;
       min-height: 100vh;
-    }
-
-    /* Background grid styling */
-    .bg-grid {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: radial-gradient(#ffffff33 1px, #00091d 1px);
-      background-size: 20px 20px;
-      pointer-events: none;
-      z-index: -2;
-    }
-
-    /* Content wrapper */
-    .content-wrapper {
-      position: relative;
-      min-height: 100vh;
-      width: 100%;
-      padding: 2rem 1rem;
     }
 
     .glass-card {
-      background: rgba(0, 9, 29, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 32px 0 rgba(255, 255, 255, 0.02),
-        0 0 4px 0 rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
     }
-    .glass-card:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 32px 0 rgba(255, 255, 255, 0.03),
-        0 0 8px 0 rgba(255, 255, 255, 0.3);
+
+    .input-base {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .glow-text {
-      color: #ffffff;
-      text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.5),
-        0 0 20px rgba(255, 255, 255, 0.3),
-        0 0 30px rgba(255, 255, 255, 0.1);
+
+    .input-base:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+      border-color: #3b82f6;
     }
-    .input-glow {
-      transition: all 0.3s ease;
+
+    .back-btn {
+      transition: all 0.2s ease;
     }
-    .input-glow:hover {
-      border-color: rgba(59, 130, 246, 0.3);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+
+    .back-btn:hover {
+      transform: translateX(-4px);
     }
-    .input-glow:focus {
-      border-color: rgba(59, 130, 246, 0.5);
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-    /* Glowing button effect */
-    .glow-btn {
-      position: relative;
-      z-index: 0;
-      overflow: hidden;
-    }
-    
-    .glow-btn::before {
-      content: "";
-      background: linear-gradient(
-        45deg,
-        #3b82f6, #60a5fa, #93c5fd, #3b82f6
-      );
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      background-size: 400%;
-      z-index: -1;
-      width: calc(100% + 4px);
-      height: calc(100% + 4px);
-      filter: blur(8px);
-      animation: glowing 20s linear infinite;
-      transition: opacity .3s ease-in-out;
-      border-radius: 10px;
+
+    .animate-up {
+      animation: slideUpFade 0.5s ease-out forwards;
       opacity: 0;
     }
-    
-    @keyframes glowing {
-      0% {background-position: 0 0;}
-      50% {background-position: 400% 0;}
-      100% {background-position: 0 0;}
-    }
-    
-    .glow-btn:hover::before {
-      opacity: 1;
-    }
-    
-    .add-btn {
-      transition: all 0.3s ease;
-      text-shadow: none;
-    }
-    
-    .add-btn:hover {
-      text-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+
+    @keyframes slideUpFade {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
-<body>
-  <!-- Fixed background with dotted grid -->
-  <div class="bg-grid"></div>
 
-  <!-- Content wrapper -->
-  <div class="content-wrapper flex items-center justify-center">
-    <div class="w-full max-w-md glass-card rounded-2xl p-6 space-y-6">
-      <h2 class="text-2xl font-semibold text-center text-white glow-text">Add Product</h2>
+<body class="min-h-screen flex flex-col antialiased">
+  <!-- Navigation -->
+  <nav
+    class="w-full py-4 px-6 md:px-12 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100/50">
+    <a href="main.html"
+      class="group flex items-center text-slate-500 hover:text-slate-800 back-btn font-medium text-sm transition-colors">
+      <div
+        class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-3 group-hover:border-slate-300 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </div>
+      <span>Dashboard</span>
+    </a>
+  </nav>
 
-      <form id="productForm" class="space-y-4">
-        <!-- Brand Dropdown -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300">Brand</label>
-          <select id="brand" class="w-full mt-1 p-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500 input-glow" required>
-            <option value="">Select Brand</option>
-            <option>Realme</option>
-            <option>OnePlus</option>
-            <option>Vivo</option>
-            <option>Oppo</option>
-            <option>Samsung</option>
-          </select>
+  <!-- Main Content -->
+  <main class="flex-grow flex items-center justify-center p-4">
+    <div class="w-full max-w-xl animate-up">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-slate-800 tracking-tight mb-2">Add New Product</h1>
+        <p class="text-slate-500 font-medium">Register mobile devices to your inventory</p>
+      </div>
+
+      <div class="glass-card rounded-[2.5rem] p-8 md:p-10 card-shadow border border-white">
+        <form id="productForm" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Brand Dropdown -->
+            <div class="space-y-1.5 group">
+              <label
+                class="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider group-focus-within:text-blue-600 transition-colors">Manufacturer</label>
+              <div class="relative">
+                <select id="brand"
+                  class="input-base w-full appearance-none rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
+                  required>
+                  <option value="" disabled selected>Select Brand</option>
+                  <option>Realme</option>
+                  <option>OnePlus</option>
+                  <option>Vivo</option>
+                  <option>Oppo</option>
+                  <option>Samsung</option>
+                  <option>Apple</option>
+                  <option>Redmi</option>
+                  <option>Xiaomi</option>
+                  <option>Itel</option>
+                  <option>Lava</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Model Input -->
+            <div class="space-y-1.5 group">
+              <label
+                class="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider group-focus-within:text-blue-600 transition-colors">Model
+                Name</label>
+              <input type="text" id="model" placeholder="e.g. Galaxy S24"
+                class="input-base w-full rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                required />
+            </div>
+          </div>
+
+          <div class="w-full h-px bg-slate-100"></div>
+
+          <!-- Dynamic Blocks Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+            <!-- RAM+ROM Dynamic Fields -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Storage Variants</label>
+              </div>
+              <div id="ramromContainer" class="space-y-3"></div>
+              <button type="button" id="addRamRomBtn"
+                class="flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 py-2 px-3 rounded-lg hover:bg-blue-50 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clip-rule="evenodd" />
+                </svg>
+                <span>Add Variant</span>
+              </button>
+            </div>
+
+            <!-- Color Dynamic Fields -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Available Colors</label>
+              </div>
+              <div id="colorContainer" class="space-y-3"></div>
+              <button type="button" id="addColorBtn"
+                class="flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 py-2 px-3 rounded-lg hover:bg-blue-50 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clip-rule="evenodd" />
+                </svg>
+                <span>Add Color</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="pt-6">
+            <button type="submit"
+              class="w-full group relative overflow-hidden bg-slate-900 text-white p-5 rounded-[1.25rem] font-bold text-lg shadow-xl shadow-slate-200 transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-3">
+              <span>Save Product Data</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-1"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <div id="successMsg"
+          class="hidden mt-6 bg-emerald-50 border border-emerald-100 text-emerald-700 px-6 py-4 rounded-2xl flex items-center gap-3 font-bold animate-up">
+          <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+          <span>Product added to inventory successfully!</span>
         </div>
-
-        <!-- Model Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300">Model</label>
-          <input type="text" id="model" class="w-full mt-1 p-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500 input-glow" required />
-        </div>
-
-        <!-- RAM+ROM Dynamic Fields -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">RAM + ROM</label>
-          <div id="ramromContainer" class="space-y-2"></div>
-          <button type="button" id="addRamRomBtn" class="text-sm text-blue-400 font-medium hover:text-blue-300 add-btn">+ Add RAM+ROM</button>
-        </div>
-
-        <!-- Color Dynamic Fields -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Color</label>
-          <div id="colorContainer" class="space-y-2"></div>
-          <button type="button" id="addColorBtn" class="text-sm text-blue-400 font-medium hover:text-blue-300 add-btn">+ Add Color</button>
-        </div>
-
-        <!-- Submit -->
-        <button type="submit" class="w-full text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center relative overflow-hidden glow-btn">
-          <span class="relative z-10">Add Product</span>
-          <div class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-purple-600 to-blue-500 blur-xl -m-1 z-0"></div>
-        </button>
-
-      </form>
-
-      <div id="successMsg" class="hidden text-green-400 text-center font-medium">
-        ✅ Product added successfully!
       </div>
     </div>
-  </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full py-8 text-center bg-white/50 backdrop-blur-sm mt-auto">
+    <p class="text-xs text-slate-400 font-medium tracking-wide">
+      © <span id="current-year"></span> <span class="text-slate-600 font-bold">Dastelecom</span> · STOCK CONTROL
+    </p>
+  </footer>
 
   <!-- Firebase Config -->
   <script type="module">
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
     import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-    
+
     // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAibWFQ955D9sxgExTvXf9ykC0HJQPbatA",
@@ -193,65 +230,71 @@
       appId: "1:959180798639:web:861d25289ff80c8c17725a",
       measurementId: "G-Y4JJXQGSJC"
     };
-    
+
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-    
+
     // Get form elements
     const productForm = document.getElementById("productForm");
     const modelInput = document.getElementById("model");
     const ramromContainer = document.getElementById("ramromContainer");
     const colorContainer = document.getElementById("colorContainer");
     const maxFields = 4;
-    
-    // Remove auto-append 5G functionality from model input
-    // 5G will only be added when clicking on color fields
-    
+
     // Function to append 5G to any model name
     function checkAndAppend5G() {
       const modelValue = modelInput.value.trim();
-      
-      // Skip if model field is empty
       if (!modelValue) return;
-      
-      // Check if 5G is already appended
       const already5G = / 5G$/i.test(modelValue);
-      
       if (!already5G) {
-        // Auto-append 5G after a space for any model
         modelInput.value = modelValue + " 5G";
-        console.log("Appended 5G to model:", modelInput.value);
       }
     }
-    
+
     function createInput(name) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "flex items-center gap-2 group";
+
       const input = document.createElement("input");
       input.type = "text";
       input.name = name;
       input.placeholder = name === "ramrom" ? "e.g. 6+128GB" : "e.g. Midnight Blue";
-      input.className = "w-full p-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500 input-glow";
+      input.className = "input-base w-full p-3 text-sm font-medium text-slate-700 rounded-xl outline-none";
       input.required = true;
-      return input;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      `;
+      removeBtn.className = "p-2 group-hover:bg-red-50 text-slate-300 group-hover:text-red-500 rounded-lg transition-all flex-shrink-0";
+      removeBtn.onclick = () => {
+        if (wrapper.parentElement.children.length > 1) {
+          wrapper.remove();
+        }
+      };
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(removeBtn);
+      return { wrapper, input };
     }
 
     function addField(container, type) {
       if (container.children.length >= maxFields) return;
-      const input = createInput(type);
-      
-      // If adding a color field, check if we need to append 5G to the model
+      const { wrapper, input } = createInput(type);
+
       if (type === "color") {
-        input.addEventListener("focus", function() {
-          checkAndAppend5G();
-        });
+        input.addEventListener("focus", checkAndAppend5G);
       }
-      
-      container.appendChild(input);
+
+      container.appendChild(wrapper);
     }
 
     document.getElementById("addRamRomBtn").onclick = () => addField(ramromContainer, "ramrom");
     document.getElementById("addColorBtn").onclick = () => {
-      // Check if we need to append 5G to the model when adding a new color field
       checkAndAppend5G();
       addField(colorContainer, "color");
     };
@@ -259,19 +302,17 @@
     // Add one field by default
     addField(ramromContainer, "ramrom");
     addField(colorContainer, "color");
-    
+
     // Add focus event to the initial color field
     const initialColorField = colorContainer.querySelector("input");
     if (initialColorField) {
-      initialColorField.addEventListener("focus", function() {
-        checkAndAppend5G();
-      });
+      initialColorField.addEventListener("focus", checkAndAppend5G);
     }
 
     // Handle form submission
-    productForm.addEventListener("submit", function(e) {
+    productForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      
+
       const data = {
         brand: document.getElementById("brand").value,
         model: document.getElementById("model").value,
@@ -279,51 +320,25 @@
         color: Array.from(colorContainer.querySelectorAll("input")).map(i => i.value),
         timestamp: Date.now()
       };
-      
-      console.log("Product Data to save:", data);
-      
+
       // Save to Firebase
       const productsRef = ref(database, 'products');
       const newProductRef = push(productsRef);
-      
-      console.log("Saving to Firebase...");
+
       set(newProductRef, data)
         .then(() => {
-          console.log("Product saved successfully with key:", newProductRef.key);
           document.getElementById("successMsg").classList.remove("hidden");
-          
-          // Show success message for a short time before redirecting
           setTimeout(() => {
-            // Redirect to main.html after showing success message
             window.location.href = "main.html";
           }, 1500);
         })
         .catch((error) => {
-          console.error("Error adding product:", error);
           alert("Error adding product: " + error.message);
         });
     });
-  </script>
-  <!-- Footer -->
-  <footer class="w-full mt-8 bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
-    <div class="text-center py-4">
-      <p class="text-gray-400">
-        © <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
-      </p>
-    </div>
-  </footer>
 
-  <script>
-    // Set current year automatically
     document.getElementById('current-year').textContent = new Date().getFullYear();
   </script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
 </body>
+
 </html>

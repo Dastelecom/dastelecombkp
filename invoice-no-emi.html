@@ -461,11 +461,20 @@
 
             <div>
               <label class="block font-medium text-gray-300">Mobile Brand Name</label>
-              <div class="custom-select">
-                <select id="mobileBrand" class="w-full" required>
-                  <option disabled selected>Select Mobile Brand</option>
-                  <!-- Brands will be loaded from Firebase -->
-                </select>
+              <div class="relative">
+                <div id="brandBtn" class="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] rounded-lg p-3.5 text-white flex items-center justify-between cursor-pointer hover:bg-[rgba(255,255,255,0.05)] transition-all">
+                  <div class="flex items-center gap-3">
+                    <img id="brandIcon" src="" class="h-6 w-6 object-contain hidden" alt="Brand Logo">
+                    <span id="brandPlaceholder" class="text-gray-400">Select Mobile Brand</span>
+                  </div>
+                  <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div id="brandList" class="dropdown-list">
+                  <!-- Items will be injected here -->
+                </div>
+                <input type="text" id="mobileBrand" class="absolute opacity-0 w-0 h-0" required>
               </div>
             </div>
 
