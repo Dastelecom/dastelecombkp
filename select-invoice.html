@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="/manifest.php">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <title>Dastelecom Invoice Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,6 +20,22 @@
         radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
         radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
       color: #1e293b;
+
+      /* Smooth Page Load */
+      opacity: 0;
+      animation: pageLoad 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes pageLoad {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Animation classes */
@@ -1092,6 +1108,12 @@
       previewSection.classList.add("hidden");
       document.querySelectorAll('#emiForm > div:not(#previewSection):not(#successMsg)').forEach(el => el.classList.remove('hidden'));
     });
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
+    }
   </script>
 </body>
 

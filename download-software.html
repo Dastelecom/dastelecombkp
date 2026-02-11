@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="/manifest.php">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <title>Download Invoice Software</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,118 +17,127 @@
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
     }
+
     .glow-effect-blue {
-      filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))
-             drop-shadow(0 0 25px rgba(59, 130, 246, 0.6))
-             drop-shadow(0 0 35px rgba(96, 165, 250, 0.5))
-             drop-shadow(0 0 45px rgba(147, 197, 253, 0.3));
+      filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 25px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 35px rgba(96, 165, 250, 0.5)) drop-shadow(0 0 45px rgba(147, 197, 253, 0.3));
       transition: filter 0.4s ease;
       animation: pulse 2s infinite;
     }
+
     .glow-effect-blue:hover {
-      filter: drop-shadow(0 0 20px rgba(59, 130, 246, 1))
-             drop-shadow(0 0 35px rgba(59, 130, 246, 0.8))
-             drop-shadow(0 0 50px rgba(96, 165, 250, 0.6))
-             drop-shadow(0 0 65px rgba(147, 197, 253, 0.4));
+      filter: drop-shadow(0 0 20px rgba(59, 130, 246, 1)) drop-shadow(0 0 35px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 50px rgba(96, 165, 250, 0.6)) drop-shadow(0 0 65px rgba(147, 197, 253, 0.4));
     }
+
     .glow-effect-green {
       filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.5));
       transition: filter 0.3s ease;
     }
+
     .glow-effect-green:hover {
       filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.7));
     }
+
     .glow-effect-cyan {
       filter: drop-shadow(0 0 8px rgba(0, 188, 255, 0.5));
       transition: filter 0.3s ease;
       /* Add hardware acceleration */
       will-change: filter;
     }
+
     .glow-effect-cyan:hover {
       filter: drop-shadow(0 0 12px rgba(0, 188, 255, 0.7));
     }
+
     .glow-effect-purple {
       filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.5));
       transition: filter 0.3s ease;
     }
+
     .glow-effect-purple:hover {
       filter: drop-shadow(0 0 12px rgba(167, 139, 250, 0.7));
     }
+
     .card-glow-blue {
       box-shadow: 0 0 25px rgba(59, 130, 246, 0.5),
-                 0 0 40px rgba(96, 165, 250, 0.3),
-                 0 0 60px rgba(147, 197, 253, 0.2);
+        0 0 40px rgba(96, 165, 250, 0.3),
+        0 0 60px rgba(147, 197, 253, 0.2);
       transition: all 0.4s ease;
       animation: cardPulse 2s infinite;
       /* Add hardware acceleration */
       will-change: box-shadow, transform;
     }
+
     .card-glow-blue:hover {
       box-shadow: 0 0 35px rgba(59, 130, 246, 0.7),
-                 0 0 60px rgba(96, 165, 250, 0.5),
-                 0 0 85px rgba(147, 197, 253, 0.3),
-                 0 0 100px rgba(191, 219, 254, 0.2);
+        0 0 60px rgba(96, 165, 250, 0.5),
+        0 0 85px rgba(147, 197, 253, 0.3),
+        0 0 100px rgba(191, 219, 254, 0.2);
     }
+
     .box-hover {
       transition: all 0.3s ease-in-out;
       /* Add hardware acceleration */
       will-change: transform, background, box-shadow, border;
     }
+
     .box-hover:hover {
       transform: translateY(-10px);
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(12px);
     }
+
     .box-hover.blue:hover {
       box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.25),
-                 0 0 25px -5px rgba(59, 130, 246, 0.1);
+        0 0 25px -5px rgba(59, 130, 246, 0.1);
       border: 1px solid rgba(59, 130, 246, 0.3);
     }
+
     .box-hover.green:hover {
       box-shadow: 0 20px 25px -5px rgba(74, 222, 128, 0.25),
-                 0 0 25px -5px rgba(74, 222, 128, 0.1);
+        0 0 25px -5px rgba(74, 222, 128, 0.1);
       border: 1px solid rgba(74, 222, 128, 0.3);
     }
+
     .box-hover.purple:hover {
       box-shadow: 0 20px 25px -5px rgba(167, 139, 250, 0.25),
-                 0 0 25px -5px rgba(167, 139, 250, 0.1);
+        0 0 25px -5px rgba(167, 139, 250, 0.1);
       border: 1px solid rgba(167, 139, 250, 0.3);
     }
+
     @keyframes pulse {
       0% {
-        filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))
-               drop-shadow(0 0 25px rgba(59, 130, 246, 0.6))
-               drop-shadow(0 0 35px rgba(96, 165, 250, 0.5));
+        filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 25px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 35px rgba(96, 165, 250, 0.5));
       }
+
       50% {
-        filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.9))
-               drop-shadow(0 0 35px rgba(59, 130, 246, 0.7))
-               drop-shadow(0 0 50px rgba(96, 165, 250, 0.6));
+        filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.9)) drop-shadow(0 0 35px rgba(59, 130, 246, 0.7)) drop-shadow(0 0 50px rgba(96, 165, 250, 0.6));
       }
+
       100% {
-        filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))
-               drop-shadow(0 0 25px rgba(59, 130, 246, 0.6))
-               drop-shadow(0 0 35px rgba(96, 165, 250, 0.5));
+        filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 25px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 35px rgba(96, 165, 250, 0.5));
       }
     }
+
     @keyframes cardPulse {
       0% {
         box-shadow: 0 0 25px rgba(59, 130, 246, 0.5),
-                   0 0 40px rgba(96, 165, 250, 0.3),
-                   0 0 60px rgba(147, 197, 253, 0.2);
+          0 0 40px rgba(96, 165, 250, 0.3),
+          0 0 60px rgba(147, 197, 253, 0.2);
       }
+
       50% {
         box-shadow: 0 0 30px rgba(59, 130, 246, 0.6),
-                   0 0 50px rgba(96, 165, 250, 0.4),
-                   0 0 70px rgba(147, 197, 253, 0.3);
+          0 0 50px rgba(96, 165, 250, 0.4),
+          0 0 70px rgba(147, 197, 253, 0.3);
       }
+
       100% {
         box-shadow: 0 0 25px rgba(59, 130, 246, 0.5),
-                   0 0 40px rgba(96, 165, 250, 0.3),
-                   0 0 60px rgba(147, 197, 253, 0.2);
+          0 0 40px rgba(96, 165, 250, 0.3),
+          0 0 60px rgba(147, 197, 253, 0.2);
       }
     }
-    
+
     /* Add smooth loading animations */
     .fade-in {
       opacity: 0;
@@ -135,16 +145,22 @@
     }
   </style>
 </head>
-  <body class="min-h-screen flex flex-col" id="mainBody">
+
+<body class="min-h-screen flex flex-col" id="mainBody">
 
   <!-- Background with dotted grid -->
-  <div class="fixed inset-0 z-[-2] w-full h-full bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
+  <div
+    class="fixed inset-0 z-[-2] w-full h-full bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+  </div>
 
   <!-- Back Button -->
   <div class="absolute top-4 left-4 z-10">
-    <a href="main.html" class="flex items-center space-x-1 p-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 hover:bg-slate-700/50 transition-all">
+    <a href="main.html"
+      class="flex items-center space-x-1 p-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 hover:bg-slate-700/50 transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        <path fill-rule="evenodd"
+          d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+          clip-rule="evenodd" />
       </svg>
       <span class="text-sm text-slate-200">Back</span>
     </a>
@@ -155,7 +171,7 @@
   <!-- Main Content -->
   <div class="flex-1 flex flex-col items-center justify-center px-4 py-6">
     <div class="w-full max-w-2xl mx-auto">
-      
+
       <!-- Page Title -->
       <div class="text-center mb-12">
         <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Download Invoice Software</h1>
@@ -164,36 +180,50 @@
         </p>
       </div>
 
-      <!-- Download Categories -->      
+      <!-- Download Categories -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        
+
         <!-- Software Downloads -->
-        <div class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover blue grid-item">
+        <div
+          class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover blue grid-item">
           <div class="flex items-center space-x-4">
             <div class="bg-blue-500/20 p-3 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400 glow-effect-blue transform transition-transform duration-300 hover:scale-125" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"/>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-blue-400 glow-effect-blue transform transition-transform duration-300 hover:scale-125"
+                viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z" />
               </svg>
             </div>
             <h3 class="text-xl font-semibold text-white">Software</h3>
           </div>
           <p class="text-slate-300">Download the latest version of our invoice generation software</p>
-          
+
           <div class="mt-4 space-y-3">
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="invoice-generator-setup.exe">
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="invoice-generator-setup.exe">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Invoice Generator Setup</span>
               </div>
               <span class="text-xs text-slate-400">Windows 10/11</span>
             </a>
-            
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="invoice-generator-portable.zip">
+
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="invoice-generator-portable.zip">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm5 12a4 4 0 100-8 4 4 0 000 8z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5zm5 12a4 4 0 100-8 4 4 0 000 8z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Portable Version</span>
               </div>
@@ -201,34 +231,48 @@
             </a>
           </div>
         </div>
-        
+
         <!-- Documentation -->
-        <div class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover purple grid-item">
+        <div
+          class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover purple grid-item">
           <div class="flex items-center space-x-4">
             <div class="bg-purple-500/20 p-3 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-400 glow-effect-purple transform transition-transform duration-300 hover:scale-125" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z"/>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-purple-400 glow-effect-purple transform transition-transform duration-300 hover:scale-125"
+                viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" />
               </svg>
             </div>
             <h3 class="text-xl font-semibold text-white">Documentation</h3>
           </div>
           <p class="text-slate-300">User guides and documentation for our software</p>
-          
+
           <div class="mt-4 space-y-3">
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="user-manual.pdf">
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="user-manual.pdf">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">User Manual</span>
               </div>
               <span class="text-xs text-slate-400">PDF (2.3 MB)</span>
             </a>
-            
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="quick-start-guide.pdf">
+
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="quick-start-guide.pdf">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Quick Start Guide</span>
               </div>
@@ -236,34 +280,48 @@
             </a>
           </div>
         </div>
-        
+
         <!-- Templates -->
-        <div class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover green grid-item">
+        <div
+          class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover green grid-item">
           <div class="flex items-center space-x-4">
             <div class="bg-green-500/20 p-3 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-400 glow-effect-green transform transition-transform duration-300 hover:scale-125" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z"/>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-green-400 glow-effect-green transform transition-transform duration-300 hover:scale-125"
+                viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z" />
               </svg>
             </div>
             <h3 class="text-xl font-semibold text-white">Templates</h3>
           </div>
           <p class="text-slate-300">Download customizable invoice templates</p>
-          
+
           <div class="mt-4 space-y-3">
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="standard-invoice-template.xlsx">
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="standard-invoice-template.xlsx">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Standard Invoice Template</span>
               </div>
               <span class="text-xs text-slate-400">Excel (245 KB)</span>
             </a>
-            
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="premium-invoice-template.xlsx">
+
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="premium-invoice-template.xlsx">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Premium Invoice Template</span>
               </div>
@@ -271,44 +329,61 @@
             </a>
           </div>
         </div>
-        
+
         <!-- Resources -->
-        <div class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover cyan grid-item">
+        <div
+          class="flex flex-col space-y-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 box-hover cyan grid-item">
           <div class="flex items-center space-x-4">
             <div class="bg-cyan-500/20 p-3 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cyan-400 glow-effect-cyan transform transition-transform duration-300 hover:scale-125" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 6H2V20C2 21.1 2.9 22 4 22H18V20H4V6ZM20 2H8C6.9 2 6 2.9 6 4V16C6 17.1 6.9 18 8 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 12L17.5 10.5L15 12V4H20V12Z"/>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-cyan-400 glow-effect-cyan transform transition-transform duration-300 hover:scale-125"
+                viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M4 6H2V20C2 21.1 2.9 22 4 22H18V20H4V6ZM20 2H8C6.9 2 6 2.9 6 4V16C6 17.1 6.9 18 8 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 12L17.5 10.5L15 12V4H20V12Z" />
               </svg>
             </div>
             <h3 class="text-xl font-semibold text-white">Resources</h3>
           </div>
           <p class="text-slate-300">Additional resources and sample files</p>
-          
+
           <div class="mt-4 space-y-3">
-            <a href="#" class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors" data-filename="sample-data.csv">
+            <a href="#"
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors"
+              data-filename="sample-data.csv">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Sample Data</span>
               </div>
               <span class="text-xs text-slate-400">CSV (150 KB)</span>
             </a>
-            
-            <a href="security-Qr_code.jpg" download class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors">
+
+            <a href="security-Qr_code.jpg" download
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Security QR Code</span>
               </div>
               <span class="text-xs text-slate-400">JPG (54 KB)</span>
             </a>
-            
-            <a href="invoice-icon.png" download class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors">
+
+            <a href="invoice-icon.png" download
+              class="download-link flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-600/50 transition-colors">
               <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span class="text-white">Invoice Icon</span>
               </div>
@@ -317,24 +392,31 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Coming Soon Section -->
       <div class="text-center mb-8 fade-in" style="animation-delay: 0.5s;">
         <h2 class="text-2xl font-bold text-white mb-4">Coming Soon</h2>
         <div class="flex justify-center">
-          <div class="flex flex-col items-center space-y-4 p-6 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/30 w-full max-w-md card-glow-blue">
+          <div
+            class="flex flex-col items-center space-y-4 p-6 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/30 w-full max-w-md card-glow-blue">
             <div class="bg-blue-500/10 p-4 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-300 glow-effect-blue transform transition-transform duration-300 hover:scale-125" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"/>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-10 w-10 text-blue-300 glow-effect-blue transform transition-transform duration-300 hover:scale-125"
+                viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z" />
               </svg>
             </div>
             <h3 class="text-xl font-semibold text-white">Mobile App Version</h3>
-            <p class="text-slate-300 text-center">Our mobile app is currently in development and will be available soon for Android and iOS devices.</p>
+            <p class="text-slate-300 text-center">Our mobile app is currently in development and will be available soon
+              for Android and iOS devices.</p>
             <div class="flex space-x-4 mt-2">
               <div class="px-4 py-2 bg-slate-700/50 text-slate-300 rounded-lg flex items-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd"
+                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                    clip-rule="evenodd" />
                 </svg>
                 <span>Get Notified</span>
               </div>
@@ -346,10 +428,12 @@
   </div>
 
   <!-- Footer -->
-  <footer class="relative z-10 w-full mt-auto bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
+  <footer
+    class="relative z-10 w-full mt-auto bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]">
     <div class="relative z-10 text-center py-6 border-t border-white/5">
       <p class="text-gray-400">
-        &copy; <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights reserved.
+        &copy; <span id="current-year"></span> <span style="color: rgb(217, 119, 87);">Dastelecom</span>. All rights
+        reserved.
       </p>
     </div>
   </footer>
@@ -360,16 +444,16 @@
 
     // Add click event listeners to download links
     document.querySelectorAll('.download-link').forEach(link => {
-      link.addEventListener('click', function(e) {
+      link.addEventListener('click', function (e) {
         // Prevent default behavior for links without download attribute
         if (!this.hasAttribute('download')) {
           e.preventDefault();
-          
+
           // Get the filename from data attribute
           const filename = this.getAttribute('data-filename');
           const fileType = filename.split('.').pop().toLowerCase();
           const fileCategory = this.closest('.flex.flex-col').querySelector('h3').textContent;
-          
+
           // Show download notification
           const notification = document.createElement('div');
           notification.className = 'fixed bottom-4 right-4 bg-slate-800 text-white p-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 animate-fade-in';
@@ -383,17 +467,17 @@
             </div>
           `;
           document.body.appendChild(notification);
-          
+
           // Remove notification after 3 seconds
           setTimeout(() => {
             notification.classList.add('animate-fade-out');
             setTimeout(() => notification.remove(), 500);
           }, 3000);
-          
+
           // In a real implementation, you would redirect to the actual download link
           // window.location.href = `/downloads/${filename}`;
           console.log(`Downloading ${filename} from ${fileCategory} category`);
-          
+
           // For demo purposes, simulate a download delay
           setTimeout(() => {
             alert(`Thank you for downloading ${filename}! In a real implementation, this file would be downloaded to your device.`);
@@ -402,46 +486,70 @@
       });
     });
   </script>
-  
+
   <style>
     /* Additional styles for animations */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    
+
     @keyframes fadeOut {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(10px); }
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(10px);
+      }
     }
-    
+
     .animate-fade-in {
       animation: fadeIn 0.3s ease-out forwards;
     }
-    
+
     .animate-fade-out {
       animation: fadeOut 0.3s ease-in forwards;
     }
-    
+
     /* Optimize grid loading */
     .grid-item {
       opacity: 0;
       animation: fadeIn 0.3s ease-out forwards;
     }
-    
-    .grid-item:nth-child(1) { animation-delay: 0.1s; }
-    .grid-item:nth-child(2) { animation-delay: 0.2s; }
-    .grid-item:nth-child(3) { animation-delay: 0.3s; }
-    .grid-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .grid-item:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .grid-item:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .grid-item:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .grid-item:nth-child(4) {
+      animation-delay: 0.4s;
+    }
   </style>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
+    }
+  </script>
 
 </body>
+
 </html>

@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
   <title>Non-GST Mobile Bill | Dastelecom</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
   <style>
     body {
@@ -19,6 +21,22 @@
         radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
         radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
       color: #1e293b;
+
+      /* Smooth Page Load */
+      opacity: 0;
+      animation: pageLoad 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes pageLoad {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .glass-effect {
@@ -243,7 +261,7 @@
                     <!-- Dropdown -->
                     <div id="brandList"
                       class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-100 shadow-xl z-50 p-2 animate-up overflow-hidden">
-                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div class="grid grid-cols-2 gap-2">
                         <div onclick="selectBrand('Itel')"
                           class="cursor-pointer p-3 sm:p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 flex items-center justify-center transition-all h-16 sm:h-20 group">
                           <img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Itel-mobile-logo-vector.svg"
@@ -257,8 +275,13 @@
                             class="h-6 w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity">
                         </div>
                         <div onclick="selectBrand('Nokia')"
-                          class="cursor-pointer p-3 sm:p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 flex items-center justify-center transition-all h-16 sm:h-20 group col-span-2 sm:col-span-1">
+                          class="cursor-pointer p-3 sm:p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 flex items-center justify-center transition-all h-16 sm:h-20 group">
                           <img src="nokia.svg" alt="Nokia"
+                            class="h-8 w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div onclick="selectBrand('HMD')"
+                          class="cursor-pointer p-3 sm:p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 flex items-center justify-center transition-all h-16 sm:h-20 group">
+                          <img src="HMD.png" alt="HMD"
                             class="h-8 w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity">
                         </div>
                       </div>
@@ -475,6 +498,9 @@
       } else if (name === "Nokia") {
         brandIcon.src = "nokia.svg";
         brandIcon.style.height = "32px";
+      } else if (name === "HMD") {
+        brandIcon.src = "HMD.png";
+        brandIcon.style.height = "32px";
       }
 
       brandList.classList.add('hidden');
@@ -483,31 +509,27 @@
     }
 
     // IMEI Scanner
+    // IMEI Scanner using html5-qrcode
+    let html5QrCode;
+
     async function startScan(targetId = 'imei') {
-      if (!('BarcodeDetector' in window)) {
-        alert("Scanner not supported on this device. Please enter IMEI manually.");
-        return;
-      }
-
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        const video = document.createElement("video");
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.play();
-
         // Create scanner overlay
         const overlay = document.createElement('div');
+        overlay.id = 'scanner-overlay';
         overlay.className = 'fixed inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-6 backdrop-blur-md';
         overlay.innerHTML = `
           <div class="relative w-full max-w-sm aspect-square border-[4px] border-white/20 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(59,130,246,0.3)] bg-slate-900/50">
-            <div id="scannerVideoContainer" class="w-full h-full opacity-80"></div>
+            <div id="reader" class="w-full h-full overflow-hidden rounded-[44px]"></div>
             <!-- Dynamic Scanning Elements -->
-            <div class="absolute inset-0 border-[60px] border-black/40 pointer-events-none"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-blue-400/50 rounded-3xl pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.2)]"></div>
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-[0_0_25px_#60a5fa] animate-[scan_2.5s_infinite] pointer-events-none"></div>
+            <div class="absolute inset-0 border-[60px] border-black/40 pointer-events-none z-10"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-blue-400/50 rounded-3xl pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.2)] z-20"></div>
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-[0_0_25px_#60a5fa] animate-[scan_2.5s_infinite] pointer-events-none z-20"></div>
           </div>
-          <style> @keyframes scan { 0% { top: 0%; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } } </style>
+          <style> 
+            @keyframes scan { 0% { top: 0%; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } } 
+            #reader video { object-fit: cover; width: 100% !important; height: 100% !important; border-radius: 44px; }
+          </style>
           
           <div class="mt-12 text-center space-y-4 animate-up">
             <h2 class="text-2xl font-bold text-white tracking-tight">Scanning Barcode</h2>
@@ -517,33 +539,116 @@
           <button id="closeScanner" class="mt-12 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-10 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 backdrop-blur-xl">Cancel Session</button>
         `;
         document.body.appendChild(overlay);
-        document.getElementById('scannerVideoContainer').appendChild(video);
-        video.className = 'w-full h-full object-cover';
 
-        const barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
-
-        const scanInterval = setInterval(async () => {
-          try {
-            const barcodes = await barcodeDetector.detect(video);
-            if (barcodes.length > 0) {
-              document.getElementById(targetId).value = barcodes[0].rawValue;
-              stopScanner();
-            }
-          } catch (e) {
-            console.error("Detection error:", e);
-          }
-        }, 300);
-
-        const stopScanner = () => {
-          clearInterval(scanInterval);
-          stream.getTracks().forEach(track => track.stop());
-          overlay.remove();
+        html5QrCode = new Html5Qrcode("reader");
+        const onScanSuccess = (decodedText, decodedResult) => {
+          document.getElementById(targetId).value = decodedText;
+          stopScanner();
         };
+
+        // Configuration without restrictive constraints
+        const config = {
+          fps: 15,
+          qrbox: {
+            width: 250,
+            height: 250
+          }
+        };
+
+        try {
+          // First, try to get available cameras
+          const devices = await Html5Qrcode.getCameras();
+
+          if (devices && devices.length > 0) {
+            // Try to find a back/rear camera
+            const backCamera = devices.find(device =>
+              device.label.toLowerCase().includes('back') ||
+              device.label.toLowerCase().includes('rear') ||
+              device.label.toLowerCase().includes('environment')
+            );
+
+            // Use back camera if found, otherwise the first available one
+            const cameraId = backCamera ? backCamera.id : devices[0].id;
+            console.log("Starting camera:", backCamera ? "Back" : "Default", cameraId);
+
+            await html5QrCode.start(cameraId, config, onScanSuccess);
+          } else {
+            // Fallback to generic constraints if enumeration fails but no error thrown
+            await html5QrCode.start({
+              facingMode: "environment"
+            }, config, onScanSuccess);
+          }
+        } catch (err) {
+          console.warn("Primary camera start failed, trying last resort mode:", err);
+          try {
+            // Last resort: any camera with minimal constraints
+            await html5QrCode.start({
+              facingMode: "user"
+            }, config, onScanSuccess);
+          } catch (finalErr) {
+            throw new Error("Could not find or access any camera. Please ensure camera permissions are granted.");
+          }
+        }
 
         document.getElementById('closeScanner').onclick = stopScanner;
 
       } catch (err) {
-        alert("Camera access denied or not available");
+        console.error(err);
+        alert("Camera access failed: " + err);
+        if (document.getElementById('scanner-overlay')) {
+          document.getElementById('scanner-overlay').remove();
+        }
+      }
+    }
+
+    function stopScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          html5QrCode.clear();
+          const overlay = document.getElementById('scanner-overlay');
+          if (overlay) overlay.remove();
+        }).catch(err => {
+          console.error("Failed to stop scanner", err);
+          const overlay = document.getElementById('scanner-overlay');
+          if (overlay) overlay.remove();
+        });
+      } else {
+        const overlay = document.getElementById('scanner-overlay');
+        if (overlay) overlay.remove();
+      }
+    }
+
+    async function startScanner() {
+      try {
+        let stream;
+        try {
+          // Try environment (back) camera first
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "environment"
+            },
+            audio: false
+          });
+        } catch (e) {
+          console.warn("Environment camera not found, trying any video device", e);
+          // Fallback to any available camera
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+        }
+
+        const video = document.getElementById("video");
+        if (video) {
+          video.srcObject = stream;
+          video.play();
+        } else {
+          console.error("Video element not found");
+        }
+
+      } catch (err) {
+        console.error("Camera error:", err);
+        alert("Camera permission denied or no camera found on this device.");
       }
     }
 
@@ -552,31 +657,25 @@
       const originalContent = submitBtn.innerHTML;
 
       const data = {
-        name: document.getElementById("customerName").value,
-        phone: document.getElementById("mobile").value,
-        address: document.getElementById("address").value,
-        brand: document.getElementById("brand").value,
-        model: document.getElementById("model").value,
-        colour: document.getElementById("colour").value,
-        imei1: document.getElementById("imei").value,
-        imei2: document.getElementById("imei2").value,
-        price: document.getElementById("price").value,
-        type: "non-gst",
-        timestamp: Date.now()
+        fullName: document.getElementById("customerName").value.trim(),
+        phoneNumber: document.getElementById("mobile").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        manufacturer: document.getElementById("brand").value.trim(),
+        model: document.getElementById("model").value.trim(),
+        color: document.getElementById("colour").value.trim(),
+        imei1: document.getElementById("imei").value.trim(),
+        imei2: document.getElementById("imei2").value.trim(),
+        totalAmount: parseFloat(document.getElementById("total").value) || 0,
+        timestamp: new Date().toISOString()
       };
 
-      if (!data.name || !data.phone || !data.brand || !data.model || !data.imei1 || !data.price) {
-        alert("Please fill all required fields");
+      if (!data.fullName || !data.phoneNumber || !data.manufacturer || !data.model || !data.imei1 || data.totalAmount <= 0) {
+        alert("Please fill all required fields and ensure price is valid");
         return;
       }
 
       if (data.imei1.length !== 15) {
         alert("IMEI 1 must be exactly 15 digits");
-        return;
-      }
-
-      if (data.imei2 && data.imei2.length !== 15) {
-        alert("IMEI 2 must be exactly 15 digits");
         return;
       }
 
@@ -588,32 +687,38 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Finalizing Invoice...</span>
+          <span>Saving Entry...</span>
         </div>
       `;
 
-      // Use a dedicated node for non-GST bills and push to create a new entry
-      database.ref("non_gst_invoices").push(data)
+      // Save directly to nonGST/lastEntry (overwrites previous data)
+      database.ref("nonGST/lastEntry").set(data)
         .then(() => {
           submitBtn.innerHTML = `
-            <div class="flex items-center justify-center gap-3">
-              <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <span>Invoice Generated!</span>
+          <div class="flex items-center justify-center gap-3">
+            <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+              <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-          `;
+            <span>Submitted Successfully</span>
+          </div>
+        `;
           setTimeout(() => {
             window.location.href = "main.html";
-          }, 1000);
+          }, 1200);
         })
         .catch((error) => {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalContent;
-          alert("Error submitting bill: " + error.message);
+          alert("Error saving to Firebase: " + error.message);
         });
+    }
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
     }
   </script>
 </body>

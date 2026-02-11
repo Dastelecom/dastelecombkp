@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="/manifest.php">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <title>Security Code</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -101,7 +101,8 @@
       <!-- QR Code -->
       <div class="flex justify-center mb-8">
         <div class="qr-container">
-          <img src="security-Qr_code.jpeg" alt="Security QR Code" class="h-48 w-48 object-contain rounded-lg">
+          <img id="security-qr-image" src="security-Qr_code.jpeg" alt="Security QR Code"
+            class="h-48 w-48 object-contain rounded-lg">
         </div>
       </div>
 
@@ -109,7 +110,8 @@
       <div class="flex flex-col items-center justify-center pt-6 border-t border-slate-100">
         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Verified By</span>
         <img src="TVS Credit.png" alt="TVS Credit Logo"
-          class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity">
+          class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity"
+          onclick="window.location.href='upload-qr.html'">
       </div>
 
     </div>
@@ -122,16 +124,45 @@
     </p>
   </footer>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAibWFQ955D9sxgExTvXf9ykC0HJQPbatA",
+      authDomain: "dastelecominvoicegenerator.firebaseapp.com",
+      databaseURL: "https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dastelecominvoicegenerator",
+      storageBucket: "dastelecominvoicegenerator.firebasestorage.app",
+      messagingSenderId: "959180798639",
+      appId: "1:959180798639:web:861d25289ff80c8c17725a",
+      measurementId: "G-Y4JJXQGSJC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const qrImage = document.getElementById('security-qr-image');
+
+    // Real-time listener for QR code URL
+    const qrRef = ref(database, 'settings/security_qr');
+    onValue(qrRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        if (data.base64) {
+          qrImage.src = data.base64;
+        } else if (data.url) {
+          qrImage.src = data.url;
+        }
+      }
+    });
+
     // Set current year automatically
     document.getElementById('current-year').textContent = new Date().getFullYear();
   </script>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/service-worker.js')
-        .then(() => console.log('Service Worker Registered'))
-        .catch((err) => console.log('Service Worker registration failed:', err));
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
     }
   </script>
 </body>

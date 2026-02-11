@@ -1,116 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="/manifest.php">
-  <meta name="theme-color" content="#ffffff">
-  <title>Dastelecom Invoice Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <title>Dastelecom | Secure Access</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <style>
-    .blinking-cursor {
-      font-weight: bold;
-      font-size: 1.5rem;
-      color: white;
-      animation: blink 1s step-end infinite;
-      display: inline;
-      margin-left: -2px;
-      line-height: 1.8;
+    body {
+      font-family: 'Outfit', sans-serif;
+
+      /* Smooth Page Load */
+      opacity: 0;
+      animation: pageLoad 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
-    @keyframes blink {
-      0%, 100% { color: transparent }
-      50% { color: white }
+
+    @keyframes pageLoad {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
-    .content-box {
-      width: 500px;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 9, 29, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    /* Noise Texture Overlay */
+    .noise::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
-    .text-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+    .glass-box {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.03),
+        inset 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-100%) skewX(-15deg);
+      }
+
+      100% {
+        transform: translateX(200%) skewX(-15deg);
+      }
+    }
+
+    .shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shine-effect::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: shine 3s infinite;
+    }
+
+    .reveal-delay-1 {
+      opacity: 0;
+      animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s;
+    }
+
+    .reveal-delay-2 {
+      opacity: 0;
+      animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.6s;
+    }
+
+    .reveal-delay-3 {
+      opacity: 0;
+      animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.9s;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.2;
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+    }
+
+    .loader-ring {
+      animation: pulse-ring 2s infinite ease-in-out;
     }
   </style>
 </head>
-<body class="flex items-center justify-center h-screen">
-  <div class="absolute top-0 z-[-2] h-screen w-screen bg-[#000000] bg-[radial-gradient(#ffffff33_1px,#00091d_1px)] bg-[size:20px_20px]"></div>
-  <div class="text-center p-6 rounded-2xl shadow-xl content-box">
-    <h1 id="company-name" class="text-2xl font-bold text-blue-500 mb-4">Dastelecom</h1>
-    <div class="text-container">
-      <p id="welcome-text" class="text-xl text-gray-200"></p><span id="cursor" class="blinking-cursor">|</span>
+
+<body class="bg-[#fbfcff] overflow-hidden noise">
+  <!-- Sophisticated Background Elements -->
+  <div class="fixed inset-0 z-[-1] overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#f0f4ff_0%,#ffffff_100%)]"></div>
+    <div class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-blue-100/30 rounded-full blur-[120px] animate-pulse">
     </div>
+    <div
+      class="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-indigo-50/40 rounded-full blur-[120px] animate-pulse"
+      style="animation-delay: 2s;"></div>
+    <!-- Mesh pattern -->
+    <div class="absolute inset-0 opacity-[0.03]"
+      style="background-image: radial-gradient(#4f46e5 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+  </div>
+
+  <div id="splash-content" class="flex flex-col items-center justify-center h-screen px-6">
+
+    <!-- Professional Branding Container -->
+    <div class="reveal-delay-1 mb-10">
+      <div class="relative">
+        <!-- Animated border ring -->
+        <div class="absolute -inset-6 border-2 border-blue-500/10 rounded-[3.5rem] loader-ring"></div>
+        <div class="absolute -inset-10 border border-blue-500/5 rounded-[4.5rem] loader-ring"
+          style="animation-delay: 0.5s;"></div>
+
+        <div
+          class="glass-box relative w-52 h-52 flex items-center justify-center rounded-[3.5rem] shadow-2xl p-10 shine-effect">
+          <img src="invoicegenerator.png" alt="Dastelecom Logo"
+            class="w-full h-full object-contain filter drop-shadow-md">
+        </div>
+      </div>
+    </div>
+
+    <!-- Typography Content -->
+    <div class="text-center space-y-4 max-w-sm">
+      <div class="reveal-delay-2 space-y-1">
+        <h1 id="company-name" class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+          Dastelecom
+        </h1>
+      </div>
+
+      <!-- Live Initialization Status -->
+      <div class="reveal-delay-3 pt-4">
+        <div class="inline-flex flex-col items-center">
+          <!-- Professional Progress Bar -->
+          <div
+            class="relative w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
+            <div id="progress-bar"
+              class="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_0_10px_rgba(37,99,235,0.4)] transition-all duration-[3000ms] ease-out w-0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </div>
 
   <script>
     const messages = {
-      english: {
-        company: "Dastelecom",
-        welcome: "Welcome to Dastelecom Invoice Generator"
-      },
-      bengali: {
-        company: "ডাস্টেলেকম",
-        welcome: "ডাস্টেলিকম ইনভয়েস জেনারেটরে আপনাকে স্বাগতম"
-      }
+      english: { company: "Dastelecom" },
+      bengali: { company: "ডাস্টেলেকম" }
     };
-    
-    const textElement = document.getElementById("welcome-text");
+
     const companyElement = document.getElementById("company-name");
-    const cursor = document.getElementById("cursor");
-    let charIndex = 0;
-    let currentMessage = "";
-    let currentLanguage = "";
+    const progressBar = document.getElementById("progress-bar");
+    const splashContent = document.getElementById("splash-content");
 
-    // Check localStorage for language preference
-    function getLanguage() {
-      const lastLanguage = localStorage.getItem('dastelLanguage');
-      
-      // If no preference exists or was English last time, use Bengali
-      if (lastLanguage === 'english') {
-        localStorage.setItem('dastelLanguage', 'bengali');
-        currentLanguage = 'bengali';
-        return messages.bengali.welcome;
-      } else {
-        // First time or was Bengali last time, use English
-        localStorage.setItem('dastelLanguage', 'english');
-        currentLanguage = 'english';
-        return messages.english.welcome;
-      }
-    }
-function typeText() {
-      if (charIndex < currentMessage.length) {
-        textElement.textContent += currentMessage.charAt(charIndex);
-        charIndex++;
-        setTimeout(typeText, 50);
-      } else {
-        // Wait before redirecting
+    // Switch language for variety
+    let currentLanguage = localStorage.getItem('dastelLanguage') === 'english' ? 'bengali' : 'english';
+    localStorage.setItem('dastelLanguage', currentLanguage);
+
+    const config = messages[currentLanguage];
+
+    window.onload = function () {
+      companyElement.textContent = config.company;
+
+      // Loading progress
+      setTimeout(() => {
+        progressBar.style.width = "100%";
+      }, 800);
+
+      // Final redirect
+      setTimeout(() => {
+        splashContent.style.opacity = "0";
+        splashContent.style.filter = "blur(10px)";
+        splashContent.style.transform = "scale(1.05)";
+        splashContent.style.transition = "all 1s cubic-bezier(0.64, 0, 0.78, 0)";
+
         setTimeout(() => {
-          // Remove cursor and redirect
-          cursor.style.display = "none";
           window.location.href = "main.html";
-        }, 2000);
-      }
-    }
-
-    window.onload = function() {
-      currentMessage = getLanguage();
-      companyElement.textContent = messages[currentLanguage].company;
-      typeText();
+        }, 800);
+      }, 4500);
     };
   </script>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch((err) => console.log('Service Worker registration failed:', err));
-  }
-</script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
+    }
+  </script>
 </body>
+
 </html>

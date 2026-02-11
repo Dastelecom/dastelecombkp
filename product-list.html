@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="/manifest.php">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <title>Products List</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +18,22 @@
         radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
       color: #1e293b;
       min-height: 100vh;
+
+      /* Smooth Page Load */
+      opacity: 0;
+      animation: pageLoad 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes pageLoad {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .glass-effect {
@@ -751,11 +767,9 @@
     document.getElementById('current-year').textContent = new Date().getFullYear();
   </script>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/service-worker.js')
-        .then(() => console.log('Service Worker Registered'))
-        .catch((err) => console.log('Service Worker registration failed:', err));
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
     }
   </script>
 </body>

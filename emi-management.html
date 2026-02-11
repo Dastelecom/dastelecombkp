@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="manifest" href="manifest.json">
   <title>EMI & Loan Management | Dastelecom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +30,22 @@
       background-image:
         radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
         radial-gradient(at 0% 100%, rgba(244, 244, 245, 1) 0px, transparent 50%);
+
+      /* Smooth Page Load */
+      opacity: 0;
+      animation: pageLoad 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes pageLoad {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .bank-logo {
@@ -308,89 +325,124 @@
       </div>
     </div>
 
-        <div class="overflow-x-auto mt-6">
-          <table class="w-full text-center border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50/50">
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Loan No.</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">EMI Partner</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Customer Name</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 extra-col text-left">Contact & Address</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 emi-col">EMI Plan</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Paid</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Pending</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Product</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Loan Amount</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Status</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Remarks</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Verified</th>
-                <th class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="loanTable" class="divide-y divide-slate-50">
-              <tr class="premium-table-row group bg-white" data-partner="IDFC FIRST BANK" data-nextemi="2025-11-22T10:00:00">
-                <td class="py-5 px-4 font-black text-slate-400">LN1001</td>
-                <td class="py-5 px-4">
-                  <div class="flex items-center justify-center emi-partner">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg" class="bank-logo" alt="IDFC">
-                  </div>
-                </td>
-                <td class="py-5 px-4 font-bold text-slate-700">Rahul Sharma</td>
-                <td class="py-5 px-4 extra-col text-left">
-                  <div class="text-xs font-bold text-slate-600">+91 9876543210</div>
-                  <div class="text-[10px] text-slate-400 mt-1">Kolkata, WB</div>
-                </td>
-                <td class="py-5 px-4 emi-col">
-                  <span class="font-black text-slate-700 tracking-tight">₹ 6,000</span>
-                  <span class="text-[10px] text-slate-400 font-bold ml-1">× 6</span>
-                </td>
-                <td class="py-5 px-4">
-                  <span class="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg font-black text-[10px]">6</span>
-                </td>
-                <td class="py-5 px-4">
-                  <span class="px-2 py-1 bg-slate-50 text-slate-400 rounded-lg font-black text-[10px]">0</span>
-                </td>
-                <td class="py-5 px-4 font-bold text-slate-600">Samsung A15</td>
-                <td class="py-5 px-4 font-black text-slate-800 tracking-tighter">₹ 85,000</td>
-                <td class="py-5 px-4">
-                  <span class="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold shadow-lg shadow-green-500/20">Active</span>
-                </td>
-                <td class="py-5 px-4 text-xs font-bold text-slate-500">
-                  <div class="flex items-center justify-center gap-2">
-                    On Time <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                  </div>
-                </td>
-                <td class="py-5 px-4">
-                  <img src="tick.png" alt="Verified" class="w-6 h-6 mx-auto">
-                </td>
-                <td class="py-5 px-4">
-                  <button class="details-btn px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg active:scale-95">Details</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="overflow-x-auto mt-6">
+      <table class="w-full text-center border-collapse text-sm">
+        <thead>
+          <tr class="bg-slate-50/50">
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Loan No.</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              EMI Partner</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Customer Name</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 extra-col text-left">
+              Contact & Address</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100 emi-col">
+              EMI Plan</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Paid</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Pending</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Product</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Loan Amount</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Status</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Remarks</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Verified</th>
+            <th
+              class="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-y border-slate-100">
+              Actions</th>
+          </tr>
+        </thead>
+        <tbody id="loanTable" class="divide-y divide-slate-50">
+          <tr class="premium-table-row group bg-white" data-partner="IDFC FIRST BANK"
+            data-nextemi="2025-11-22T10:00:00">
+            <td class="py-5 px-4 font-black text-slate-400">LN1001</td>
+            <td class="py-5 px-4">
+              <div class="flex items-center justify-center emi-partner">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_of_IDFC_First_Bank.svg"
+                  class="bank-logo" alt="IDFC">
+              </div>
+            </td>
+            <td class="py-5 px-4 font-bold text-slate-700">Rahul Sharma</td>
+            <td class="py-5 px-4 extra-col text-left">
+              <div class="text-xs font-bold text-slate-600">+91 9876543210</div>
+              <div class="text-[10px] text-slate-400 mt-1">Kolkata, WB</div>
+            </td>
+            <td class="py-5 px-4 emi-col">
+              <span class="font-black text-slate-700 tracking-tight">₹ 6,000</span>
+              <span class="text-[10px] text-slate-400 font-bold ml-1">× 6</span>
+            </td>
+            <td class="py-5 px-4">
+              <span class="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg font-black text-[10px]">6</span>
+            </td>
+            <td class="py-5 px-4">
+              <span class="px-2 py-1 bg-slate-50 text-slate-400 rounded-lg font-black text-[10px]">0</span>
+            </td>
+            <td class="py-5 px-4 font-bold text-slate-600">Samsung A15</td>
+            <td class="py-5 px-4 font-black text-slate-800 tracking-tighter">₹ 85,000</td>
+            <td class="py-5 px-4">
+              <span
+                class="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold shadow-lg shadow-green-500/20">Active</span>
+            </td>
+            <td class="py-5 px-4 text-xs font-bold text-slate-500">
+              <div class="flex items-center justify-center gap-2">
+                On Time <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              </div>
+            </td>
+            <td class="py-5 px-4">
+              <img src="tick.png" alt="Verified" class="w-6 h-6 mx-auto">
+            </td>
+            <td class="py-5 px-4">
+              <button
+                class="details-btn px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg active:scale-95">Details</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <!-- Next EMI Reminder -->
-        <div id="emiReminder" class="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div>
-              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Upcoming EMI Alert</div>
-              <div id="emiMessage" class="text-slate-700 font-bold">Checking for upcoming dues...</div>
-            </div>
-          </div>
-          <button id="viewSchedule" class="px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95">View Schedule</button>
+    <!-- Next EMI Reminder -->
+    <div id="emiReminder"
+      class="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Upcoming EMI Alert</div>
+          <div id="emiMessage" class="text-slate-700 font-bold">Checking for upcoming dues...</div>
         </div>
       </div>
+      <button id="viewSchedule"
+        class="px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95">View
+        Schedule</button>
+    </div>
+    </div>
     </div>
   </main>
 
-  <footer class="py-10 text-center text-slate-400 text-xs font-medium border-t border-slate-100 bg-white/50 backdrop-blur-md">
+  <footer
+    class="py-10 text-center text-slate-400 text-xs font-medium border-t border-slate-100 bg-white/50 backdrop-blur-md">
     &copy; 2026 <span class="text-slate-900 font-bold">Dastelecom</span>. All Rights Reserved.
   </footer>
 
@@ -971,6 +1023,12 @@
     if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPDF);
     const exportExcelBtn = document.getElementById('exportExcel');
     if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"));
+    }
   </script>
 </body>
 
