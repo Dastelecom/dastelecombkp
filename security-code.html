@@ -100,18 +100,23 @@
 
       <!-- QR Code -->
       <div class="flex justify-center mb-8">
-        <div class="qr-container">
+        <div class="qr-container p-4">
           <img id="security-qr-image" src="security-Qr_code.jpeg" alt="Security QR Code"
-            class="h-48 w-48 object-contain rounded-lg">
+            class="h-64 w-64 object-contain rounded-lg">
         </div>
       </div>
 
-      <!-- Partner Logo -->
+      <!-- Partner Logos -->
       <div class="flex flex-col items-center justify-center pt-6 border-t border-slate-100">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Verified By</span>
-        <img src="TVS Credit.png" alt="TVS Credit Logo"
-          class="h-8 object-contain opacity-80 hover:opacity-100 transition-opacity"
-          onclick="window.location.href='upload-qr.html'">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Select Bank</span>
+        <div class="flex items-center gap-6">
+          <img src="TVS Credit.png" alt="TVS Credit Logo"
+            class="h-12 w-40 cursor-pointer object-contain opacity-80 hover:opacity-100 transition-all hover:scale-110"
+            onclick="setQR('tvs')">
+          <img src="IDFC FIRST BANK.png" alt="IDFC FIRST BANK Logo"
+            class="h-12 w-40 cursor-pointer object-contain opacity-80 hover:opacity-100 transition-all hover:scale-110"
+            onclick="setQR('idfc')">
+        </div>
       </div>
 
     </div>
@@ -143,18 +148,44 @@
     const database = getDatabase(app);
     const qrImage = document.getElementById('security-qr-image');
 
+    let tvsQR = 'security-Qr_code.jpeg';
+    let selectedBank = 'tvs';
+
     // Real-time listener for QR code URL
     const qrRef = ref(database, 'settings/security_qr');
     onValue(qrRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        if (data.base64) {
-          qrImage.src = data.base64;
-        } else if (data.url) {
-          qrImage.src = data.url;
+        const newSrc = data.base64 || data.url;
+        if (newSrc) {
+          tvsQR = newSrc;
+          if (selectedBank === 'tvs') {
+            qrImage.src = tvsQR;
+          }
         }
       }
     });
+
+    // Function to set QR code based on bank
+    window.setQR = function (bank) {
+      selectedBank = bank;
+      if (bank === 'tvs') {
+        qrImage.src = tvsQR;
+        qrImage.style.cursor = 'pointer';
+      } else if (bank === 'idfc') {
+        qrImage.src = 'idfc.jpg';
+        qrImage.style.cursor = 'default';
+      }
+    };
+
+    qrImage.style.cursor = 'pointer';
+
+    // Click handler for the QR image
+    qrImage.onclick = function () {
+      if (selectedBank === 'tvs') {
+        window.location.href = 'upload-qr.html';
+      }
+    };
 
     // Set current year automatically
     document.getElementById('current-year').textContent = new Date().getFullYear();

@@ -1,0 +1,23 @@
+Options -Indexes
+RewriteEngine On
+
+# Remove .html extension
+RewriteCond %{THE_REQUEST} \s/([^.]+)\.html [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^([^\.]+)$ $1.html [L]
+
+<FilesMatch "\.(js|css)$">
+    Header set Access-Control-Allow-Origin "https://dastelecombkp.infinityfreeapp.com/"
+</FilesMatch>
+
+<FilesMatch "(firebase|config|env)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"

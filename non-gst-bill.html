@@ -303,61 +303,43 @@
                     placeholder="e.g. Midnight Blue">
                 </div>
 
-                <div class="group">
+                <div class="group md:col-span-2">
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">IMEI
                     1</label>
                   <div class="flex gap-2">
                     <div class="relative flex-grow">
                       <input id="imei" type="text" maxlength="15"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15)"
-                        class="input-base w-full rounded-xl border border-slate-200 p-4 pr-12 text-sm focus-ring outline-none text-slate-700 font-mono font-medium placeholder:text-slate-400 shadow-sm"
+                        class="input-base w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-mono font-medium placeholder:text-slate-400 shadow-sm"
                         placeholder="Scan or enter 15-digit number">
-                      <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                          stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                      </div>
                     </div>
                     <button onclick="startScan('imei')" type="button"
-                      class="bg-slate-900 hover:bg-black text-white p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center justify-center min-w-[48px]">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
+                      class="bg-white border border-slate-200 hover:border-blue-500 text-blue-600 p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-sm flex items-center justify-center min-w-[48px] group">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                       </svg>
                     </button>
                   </div>
                 </div>
 
-                <div class="group">
+                <div class="group md:col-span-2">
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">IMEI 2
                     (Optional)</label>
                   <div class="flex gap-2">
                     <div class="relative flex-grow">
                       <input id="imei2" type="text" maxlength="15"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15)"
-                        class="input-base w-full rounded-xl border border-slate-200 p-4 pr-12 text-sm focus-ring outline-none text-slate-700 font-mono font-medium placeholder:text-slate-400 shadow-sm"
+                        class="input-base w-full rounded-xl border border-slate-200 p-4 text-sm focus-ring outline-none text-slate-700 font-mono font-medium placeholder:text-slate-400 shadow-sm"
                         placeholder="Scan or enter 15-digit number">
-                      <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                          stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                      </div>
                     </div>
                     <button onclick="startScan('imei2')" type="button"
-                      class="bg-slate-900 hover:bg-black text-white p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center justify-center min-w-[48px]">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
+                      class="bg-white border border-slate-200 hover:border-blue-500 text-blue-600 p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-sm flex items-center justify-center min-w-[48px] group">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                       </svg>
                     </button>
                   </div>
@@ -517,14 +499,13 @@
         // Create scanner overlay
         const overlay = document.createElement('div');
         overlay.id = 'scanner-overlay';
-        overlay.className = 'fixed inset-0 bg-black/95 z-[100] flex flex-col items-center justify-center p-6 backdrop-blur-md';
+        overlay.className = 'fixed inset-0 bg-white/95 z-[100] flex flex-col items-center justify-center p-6 backdrop-blur-xl';
         overlay.innerHTML = `
-          <div class="relative w-full max-w-sm aspect-square border-[4px] border-white/20 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(59,130,246,0.3)] bg-slate-900/50">
-            <div id="reader" class="w-full h-full overflow-hidden rounded-[44px]"></div>
-            <!-- Dynamic Scanning Elements -->
-            <div class="absolute inset-0 border-[60px] border-black/40 pointer-events-none z-10"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-blue-400/50 rounded-3xl pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.2)] z-20"></div>
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-[0_0_25px_#60a5fa] animate-[scan_2.5s_infinite] pointer-events-none z-20"></div>
+          <div class="relative w-full max-w-sm aspect-[4/3] border-[4px] border-slate-100 rounded-[32px] overflow-hidden shadow-2xl bg-white">
+            <div id="reader" class="w-full h-full overflow-hidden rounded-[28px]"></div>
+            <div class="absolute inset-0 border-[40px] border-white/60 pointer-events-none z-10"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-32 border-2 border-blue-500/40 rounded-2xl pointer-events-none z-20"></div>
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent shadow-[0_0_15px_rgba(37,99,235,0.4)] animate-[scan_2.5s_infinite] pointer-events-none z-20"></div>
           </div>
           <style> 
             @keyframes scan { 0% { top: 0%; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } } 
@@ -532,11 +513,11 @@
           </style>
           
           <div class="mt-12 text-center space-y-4 animate-up">
-            <h2 class="text-2xl font-bold text-white tracking-tight">Scanning Barcode</h2>
-            <p class="text-slate-400 font-medium max-w-xs mx-auto text-sm leading-relaxed">Position the 15-digit IMEI barcode clearly within the central frame</p>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Scanning IMEI</h2>
+            <p class="text-slate-500 font-medium max-w-xs mx-auto text-sm leading-relaxed">Position the 15-digit IMEI barcode clearly within the frame</p>
           </div>
           
-          <button id="closeScanner" class="mt-12 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-10 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 backdrop-blur-xl">Cancel Session</button>
+          <button id="closeScanner" class="mt-12 bg-slate-900 hover:bg-black text-white px-10 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-slate-200">Cancel Session</button>
         `;
         document.body.appendChild(overlay);
 

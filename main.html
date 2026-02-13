@@ -152,7 +152,7 @@
 <body class="flex flex-col min-h-screen" id="mainBody">
 
   <!-- Security Icon at Top Center -->
-  <div class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+  <div class="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
     <a href="security-code.html" class="block transition-transform active:scale-95">
       <div class="relative group">
         <div
@@ -268,17 +268,7 @@
     </div>
   </main>
 
-  <!-- Microphone Icon for Voice Command -->
-  <div class="flex justify-center pb-8 animate-fade-in" style="animation-delay: 0.8s;">
-    <button id="voiceCommandBtn"
-      class="group p-5 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400 group-hover:text-blue-500 transition-colors"
-        viewBox="0 0 24 24" fill="currentColor">
-        <path
-          d="M12 2A3 3 0 0 0 9 5V11A3 3 0 0 0 15 11V5A3 3 0 0 0 12 2M19 11C19 14.53 16.39 17.44 13 17.93V21H11V17.93C7.61 17.44 5 14.53 5 11H7A5 5 0 0 1 12 16A5 5 0 0 1 17 11Z" />
-      </svg>
-    </button>
-  </div>
+
 
   <!-- Footer -->
   <footer class="w-full mt-auto py-8 text-center bg-white/50 backdrop-blur-sm border-t border-slate-100">
@@ -290,134 +280,6 @@
   <script>
     // Set current year automatically
     document.getElementById('current-year').textContent = new Date().getFullYear();
-
-    // Voice command functionality (Kept from original)
-    document.addEventListener('DOMContentLoaded', function () {
-      const voiceBtn = document.getElementById('voiceCommandBtn');
-      let recognition;
-      let isListening = false;
-      let currentStep = 'main';
-      let shouldListen = true;
-
-      const micIcon = voiceBtn.querySelector('svg');
-
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 3;
-
-        voiceBtn.addEventListener('click', function () {
-          if (!recognition) return;
-          if (shouldListen) {
-            shouldListen = false;
-            if (isListening) {
-              try { recognition.stop(); } catch (e) { }
-            }
-          } else {
-            shouldListen = true;
-            if (!isListening) {
-              try { recognition.start(); } catch (e) { }
-            }
-          }
-        });
-
-        recognition.onstart = function () {
-          isListening = true;
-          micIcon.classList.add('animate-pulse');
-          micIcon.classList.remove('text-slate-400');
-          micIcon.classList.add('text-blue-500');
-        };
-
-        recognition.onresult = function (event) {
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript.toLowerCase().trim();
-            const rawTranscript = event.results[i][0].transcript;
-
-            if (currentStep === 'main') {
-              let destination = null;
-              let sayText = null;
-              const openInvoicePhrases = ['open invoice', 'open invoice form', 'create invoice', 'make invoice', 'new invoice', 'new bill'];
-              const bengaliPhrase = 'নতুন বিল';
-              let commandRecognized = false;
-              let bnMatch = false;
-
-              for (const phrase of openInvoicePhrases) {
-                if (transcript.includes(phrase)) {
-                  commandRecognized = true;
-                  destination = 'select-invoice.html';
-                  sayText = 'Opening invoice';
-                  break;
-                }
-              }
-
-              if (!commandRecognized) {
-                if (transcript.includes('add products') || transcript.includes('add product')) {
-                  commandRecognized = true; destination = 'add-products.html'; sayText = 'Opening add products';
-                } else if (transcript.includes('product list') || transcript.includes('products list')) {
-                  commandRecognized = true; destination = 'product-list.html'; sayText = 'Opening products list';
-                } else if (transcript.includes('invoice software') || transcript.includes('download software')) {
-                  commandRecognized = true; destination = 'download-software.html'; sayText = 'Opening invoice software';
-                } else if (transcript.includes('invoice pdf') || transcript.includes('invoice pdfs')) {
-                  commandRecognized = true; destination = 'invoice-pdfs.html'; sayText = 'Opening invoice PDFs';
-                } else if (transcript.includes('analytics') || transcript.includes('analysis')) {
-                  commandRecognized = true; destination = 'analysis.html'; sayText = 'Opening analytics';
-                } else if (transcript.includes('emi management') || transcript.includes('emi')) {
-                  commandRecognized = true; destination = 'emi-management.html'; sayText = 'Opening EMI management';
-                } else if (transcript.includes('security code')) {
-                  commandRecognized = true; destination = 'security-code.html'; sayText = 'Opening security code';
-                }
-              }
-
-              if (!commandRecognized && (event.results[i][0].transcript.includes(bengaliPhrase) || event.results[i][0].transcript.includes('নতুন ইনভয়েস'))) {
-                commandRecognized = true; bnMatch = true; destination = 'select-invoice.html'; sayText = 'ওপেন করছি ইনভয়েস';
-              }
-
-              if (!commandRecognized) {
-                if (rawTranscript.includes('প্রোডাক্ট') || rawTranscript.includes('পণ্য')) {
-                  commandRecognized = true; bnMatch = true; destination = 'add-products.html'; sayText = 'প্রোডাক্ট যোগ পৃষ্ঠা খুলছি';
-                } else if (rawTranscript.includes('তালিকা') || rawTranscript.includes('লিস্ট')) {
-                  commandRecognized = true; bnMatch = true; destination = 'product-list.html'; sayText = 'প্রোডাক্ট তালিকা খুলছি';
-                }
-              }
-
-              if (commandRecognized && event.results[i].isFinal) {
-                if ('speechSynthesis' in window) {
-                  const utterance = new SpeechSynthesisUtterance(sayText || (bnMatch ? 'ওপেন করছি' : 'Opening'));
-                  utterance.lang = bnMatch ? 'bn-IN' : 'en-US';
-                  speechSynthesis.speak(utterance);
-                  setTimeout(() => { window.location.href = destination || 'select-invoice.html'; }, 900);
-                } else {
-                  window.location.href = destination || 'select-invoice.html';
-                }
-                return;
-              }
-            }
-          }
-        };
-
-        recognition.onend = function () {
-          isListening = false;
-          micIcon.classList.remove('animate-pulse');
-
-          setTimeout(() => {
-            if (shouldListen && !isListening) {
-              try { recognition.start(); } catch (e) { }
-            }
-          }, 1500);
-        };
-
-        setTimeout(() => {
-          try {
-            if (shouldListen) { recognition.start(); }
-          } catch (error) { }
-        }, 1500);
-      } else {
-        voiceBtn.style.display = 'none';
-      }
-    });
   </script>
   <script>
     if ("serviceWorker" in navigator) {
