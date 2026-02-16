@@ -282,9 +282,9 @@
 
                 <form id="loginForm" class="space-y-4">
                     <div class="input-group">
-                        <label class="input-label">Admin Username</label>
+                        <label class="input-label">Admin Email</label>
                         <div class="relative">
-                            <input type="text" id="username" class="input-control" placeholder="Enter admin username"
+                            <input type="email" id="email" class="input-control" placeholder="Enter admin email"
                                 required>
                             <svg class="input-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -312,8 +312,7 @@
                     </div>
 
                     <button type="submit" class="primary-btn mt-6" id="loginSubmitBtn">Sign in</button>
-                    <p id="loginError" class="text-center text-xs text-rose-500 mt-4 font-bold hidden">Invalid
-                        administrative credentials.</p>
+                    <p id="errorMsg" class="text-center text-xs text-rose-500 mt-4 font-bold"></p>
                 </form>
             </div>
 
@@ -376,110 +375,63 @@
     </div>
 
     <!-- FIREBASE INTEGRATION -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    <script>
+        const API = "https://invoice-generator-backened.vercel.app/api/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAibWFQ955D9sxgExTvXf9ykC0HJQPbatA",
-            authDomain: "dastelecominvoicegenerator.firebaseapp.com",
-            databaseURL: "https://dastelecominvoicegenerator-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "dastelecominvoicegenerator",
-            storageBucket: "dastelecominvoicegenerator.firebasestorage.app",
-            messagingSenderId: "959180798639",
-            appId: "1:959180798639:web:861d25289ff80c8c17725a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // --- AUTH LOGIC ---
-
-
-
-        // 2. Sign In
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('loginSubmitBtn');
-            const error = document.getElementById('loginError');
-            const email = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
 
-            btn.disabled = true;
-            btn.innerHTML = "Verifying Identity...";
-            error.classList.add('hidden');
+            const email = document.getElementById("email").value; // MUST BE EMAIL
+            const password = document.getElementById("password").value;
 
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-                btn.innerHTML = "Authorized";
-                btn.style.background = "#10b981";
+                const res = await fetch(`${API}/login`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email, password }) // NOT username
+                });
 
-                setTimeout(() => {
-                    document.getElementById('card').style.opacity = '0';
-                    document.getElementById('card').style.transform = 'scale(0.95) translateY(-20px)';
-                    setTimeout(() => window.location.href = "download-software.html", 400);
-                }, 800);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || "Login failed");
+                }
+
+                localStorage.setItem("accessToken", data.accessToken);
+                window.location.href = "download-software.html";
+
             } catch (err) {
-                btn.disabled = false;
-                btn.innerHTML = "Sign in";
-                error.textContent = "Login failed: Check email or password";
-                error.classList.remove('hidden');
+                document.getElementById("errorMsg").innerText = err.message;
             }
         });
 
-        // 3. Reset Password
-        document.getElementById('resetForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('resetSubmitBtn');
-            const email = document.getElementById('resetIdentifier').value;
-
-            btn.disabled = true;
-            btn.innerHTML = "Initiating Recovery...";
-
-            try {
-                await sendPasswordResetEmail(auth, email);
-                document.getElementById('sentEmail').textContent = email;
-                document.getElementById('resetForm').classList.add('hidden');
-                document.getElementById('resetSuccess').classList.remove('hidden');
-            } catch (err) {
-                btn.disabled = false;
-                btn.innerHTML = "Send Recovery Link";
-                alert(err.message);
-            }
-        });
-
-        // Global exposing for the onclick handlers
+        // UI Switching Logic
         window.switchView = function (viewId) {
-            const views = ['loginView', 'registerView', 'resetView'];
-            const tabs = { 'loginView': 'signInTab', 'registerView': 'signUpTab', 'resetView': null };
+            const views = ['loginView', 'resetView'];
 
             views.forEach(v => {
                 const el = document.getElementById(v);
-                if (v === viewId) {
-                    el.classList.remove('hidden-view');
-                    el.classList.add('active-view');
-                } else {
-                    el.classList.add('hidden-view');
-                    el.classList.remove('active-view');
+                if (el) {
+                    if (v === viewId) {
+                        el.classList.remove('hidden-view');
+                        el.classList.add('active-view');
+                    } else {
+                        el.classList.add('hidden-view');
+                        el.classList.remove('active-view');
+                    }
                 }
             });
 
-            // Update Tabs
-            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active-tab'));
-            if (tabs[viewId]) {
-                document.getElementById(tabs[viewId]).classList.add('active-tab');
-                document.getElementById('authTabs').classList.remove('hidden');
-            } else {
-                document.getElementById('authTabs').classList.add('hidden');
-            }
-
-            // Specific reset handling
+            // Specific reset handling for Reset View
             if (viewId === 'loginView') {
-                document.getElementById('resetSuccess').classList.add('hidden');
-                document.getElementById('resetForm').classList.remove('hidden');
-                document.getElementById('loginSubmitBtn').disabled = false;
-                document.getElementById('loginSubmitBtn').innerHTML = "Sign in";
-                document.getElementById('loginSubmitBtn').style.background = "#2563eb";
+                const resetSuccess = document.getElementById('resetSuccess');
+                const resetForm = document.getElementById('resetForm');
+
+                if (resetSuccess) resetSuccess.classList.add('hidden');
+                if (resetForm) resetForm.classList.remove('hidden');
             }
         };
     </script>
