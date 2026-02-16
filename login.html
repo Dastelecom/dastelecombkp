@@ -401,6 +401,14 @@
                 }
 
                 localStorage.setItem("accessToken", data.accessToken);
+
+                // Save user details if available, otherwise just email
+                if (data.user) {
+                    localStorage.setItem("user_data", JSON.stringify(data.user));
+                } else {
+                    localStorage.setItem("user_data", JSON.stringify({ email: email }));
+                }
+
                 window.location.href = "download-software.html";
 
             } catch (err) {
